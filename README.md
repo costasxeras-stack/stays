@@ -1,8 +1,13 @@
-# Stays — LiteAPI (Nuitee) booking app
+# Philoxenia — Nuitee LiteAPI demo
 
-1. Get a sandbox key from the LiteAPI dashboard (starts with `sand_`).
-2. `cp .env.example .env` and paste the key.
-3. `npm install && npm start` → open http://localhost:3000
-4. Search a city → pick a room → enter guest → pay with test card 4242 4242 4242 4242 → booking confirmed.
+Pages
+- /          Booking site: destination + AI search, multi-room/children, filters, hotel photos/reviews/AI sentiment, prebook (price check, voucher, cancellation timeline), Payment SDK, booking, manage/cancel
+- /mapping   Room Mapping Inspector: roomMapping coverage per destination and per hotel (supplier names -> master rooms), CSV export
+- /lab       API Lab (password): every LiteAPI endpoint with editable params + live call log
 
-Swap to a `prod_` key to go live (the app switches the Payment SDK to live automatically).
+Render environment variables
+- LITEAPI_KEY   your sand_... key
+- LAB_PASSWORD  any password, enables /lab
+
+Run locally: npm install && npm start  ->  http://localhost:3000
+Sandbox test card: 4242 4242 4242 4242, any future expiry, any CVC.

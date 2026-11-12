@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>API Lab — Philoxenia</title>
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Manrope:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--deep:#0b2240;--aegean:#1d4f91;--foam:#e9f1fa;--marble:#f8f6f1;--line:#e4e0d6;--mute:#667085;--ok:#2e7d4f;--bad:#c4583c;--gold:#b8975a}
+*{box-sizing:border-box}body{margin:0;font:14px/1.5 'Manrope',system-ui,sans-serif;background:var(--marble);color:#15202e}
+header{background:var(--deep);color:#fff;padding:16px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+header h1{font:600 26px 'Cormorant Garamond',serif;margin:0;letter-spacing:.06em}header a{color:#c7d6ea;font-size:13px}
+header .pw{margin-left:auto;display:flex;gap:8px}
+input,select,textarea,button{font:inherit}
+.pw input{padding:8px 10px;border-radius:8px;border:0;width:200px}
+.btn{background:var(--aegean);color:#fff;border:0;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer}.btn:hover{background:#163e73}
+.btn.sm{padding:5px 10px;font-size:12px}.btn.gold{background:var(--gold)}
+.layout{display:grid;grid-template-columns:330px 1fr;gap:0;min-height:calc(100vh - 66px)}
+aside{background:#fff;border-right:1px solid var(--line);overflow:auto;max-height:calc(100vh - 66px);position:sticky;top:0}
+.grp{padding:12px 14px 4px;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.ep{display:flex;gap:8px;align-items:center;padding:8px 14px;cursor:pointer;border-left:3px solid transparent}
+.ep:hover{background:var(--foam)}.ep.on{background:var(--foam);border-color:var(--aegean)}
+.m{font:600 10px 'JetBrains Mono',monospace;padding:2px 6px;border-radius:4px;color:#fff;min-width:38px;text-align:center}
+.GET{background:#2e7d4f}.POST{background:#1d4f91}.PUT{background:#b8975a}
+.ep span:last-child{font-size:13px}
+main{padding:22px;min-width:0}
+.card{background:#fff;border-radius:14px;padding:18px;box-shadow:0 6px 20px rgba(11,34,64,.06);margin-bottom:16px}
+.card h2{margin:0 0 4px;font-size:18px}.mute{color:var(--mute);font-size:13px}
+.url{font:13px 'JetBrains Mono',monospace;background:var(--marble);padding:8px 10px;border-radius:8px;margin:10px 0;word-break:break-all}
+.params{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.params label{font-size:12px;font-weight:700;color:var(--mute)}
+.params input{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;margin-top:3px}
+textarea{width:100%;min-height:170px;font:12.5px/1.5 'JetBrains Mono',monospace;padding:10px;border:1px solid var(--line);border-radius:8px}
+pre{background:#0d1726;color:#d6e2f2;border-radius:12px;padding:14px;overflow:auto;max-height:520px;font:12.5px/1.5 'JetBrains Mono',monospace;margin:0}
+.st{display:inline-block;padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;color:#fff}.st.ok{background:var(--ok)}.st.bad{background:var(--bad)}
+.k{color:#8fc1ff}.s{color:#c6e3a5}.n{color:#f2c97d}.b{color:#f29e7d}
+table{width:100%;border-collapse:collapse;font-size:12.5px}td,th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+.warn{background:#fbece6;border:1px solid #f0cfc2;border-radius:10px;padding:10px 12px;font-size:13px;margin-top:10px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+@media(max-width:820px){.layout{grid-template-columns:1fr}aside{position:static;max-height:300px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>API LAB</h1><span class="mute" style="color:#9fb2cc">Every Nuitee LiteAPI endpoint, one click each</span><a href="/">← Back to site</a>
+  <div class="pw"><input id="pw" type="password" placeholder="Lab password"><button class="btn gold" id="save">Unlock</button></div>
+</header>
+<div class="layout">
+  <aside id="list"></aside>
+  <main>
+    <div class="card" id="intro"><h2>How to use</h2>
+      <p class="mute">1. Enter the lab password (the <b>LAB_PASSWORD</b> you set in Render). 2. Pick an endpoint on the left. 3. Edit parameters or the JSON body. 4. Press <b>Send</b>. Calls go through your server, so your API key never reaches the browser.</p>
+      <p class="mute">Tip: run <b>Hotels by city</b> first to get hotel IDs, then <b>Hotel details</b>, <b>Reviews</b> and <b>Full rates</b>. After a test booking on the site, use <b>Retrieve booking</b> and <b>Cancel booking</b>.</p>
+    </div>
+    <div class="card hidden" id="ep" style="display:none">
+      <div class="row"><span class="m" id="epM"></span><h2 id="epT"></h2></div>
+      <div class="mute" id="epD"></div>
+      <div class="url" id="epU"></div>
+      <div class="params" id="epP"></div>
+      <div id="bodyWrap" style="margin-top:12px"><label class="mute"><b>JSON body</b></label><textarea id="body" spellcheck="false"></textarea></div>
+      <div id="epW"></div>
+      <div class="row" style="margin-top:12px"><button class="btn" id="send">Send request</button><span id="stat"></span></div>
+    </div>
+    <div class="card" id="outCard" style="display:none"><div class="row" style="justify-content:space-between"><h2>Response</h2><button class="btn sm" id="copy">Copy JSON</button></div><pre id="out"></pre></div>
+    <div class="card"><div class="row" style="justify-content:space-between"><h2>Live call log</h2><button class="btn sm" id="refresh">Refresh</button></div>
+      <p class="mute">Every LiteAPI call made by the site and the lab (newest first, last 150).</p>
+      <div style="overflow:auto"><table><thead><tr><th>Time</th><th>Method</th><th>Status</th><th>ms</th><th>Endpoint</th></tr></thead><tbody id="log"></tbody></table></div></div>
+  </main>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const day=n=>new Date(Date.now()+n*864e5).toISOString().slice(0,10);
+let PW=''; try{PW=sessionStorage.getItem('labpw')||''}catch{}
+$('pw').value=PW; $('save').onclick=()=>{PW=$('pw').value; try{sessionStorage.setItem('labpw',PW)}catch{} loadLog();};
+
+// [group, title, method, target, path template, params {name:default}, body|null, description, warning]
+const EP=[
+ ['Static data','Countries','GET','api','/data/countries',{},null,'All countries with ISO-2 codes (used for guest nationality).'],
+ ['Static data','Cities in a country','GET','api','/data/cities?countryCode={countryCode}',{countryCode:'GR'},null,'Cities for an ISO-2 country code.'],
+ ['Static data','Currencies','GET','api','/data/currencies',{},null,'Supported currencies.'],
+ ['Static data','Facilities','GET','api','/data/facilities',{},null,'Master list of hotel facility IDs and names.'],
+ ['Static data','Hotel types','GET','api','/data/hotelTypes',{},null,'Hotel, apartment, villa…'],
+ ['Static data','Hotel chains','GET','api','/data/chains',{},null,'Chain IDs and names.'],
+ ['Static data','IATA codes','GET','api','/data/iataCodes',{},null,'Airports with coordinates. Large response.'],
+ ['Search','Places autocomplete','GET','api','/data/places?textQuery={textQuery}&language=en',{textQuery:'Santorini'},null,'Destination search. Returns placeId for rates.'],
+ ['Search','Hotels by city','GET','api','/data/hotels?countryCode={countryCode}&cityName={cityName}&limit={limit}',{countryCode:'GR',cityName:'Santorini',limit:'10'},null,'Static hotel list. Copy an id for the endpoints below.'],
+ ['Search','Hotels near a point','GET','api','/data/hotels?latitude={latitude}&longitude={longitude}&radius={radius}&limit={limit}',{latitude:'37.9715',longitude:'23.7257',radius:'2000',limit:'10'},null,'Geo search (radius in metres). Default: the Acropolis.'],
+ ['Search','AI semantic search (beta)','GET','api','/data/hotels/semantic-search?query={query}&limit={limit}&min_rating={min_rating}',{query:'romantic cliffside hotel with caldera view',limit:'5',min_rating:'0'},null,'Natural-language hotel search with match stories.'],
+ ['Hotel content','Hotel details','GET','api','/data/hotel?hotelId={hotelId}',{hotelId:''},null,'Full static content: images, description, facilities, policies.'],
+ ['Hotel content','Reviews + AI sentiment','GET','api','/data/reviews?hotelId={hotelId}&limit={limit}&getSentiment=true',{hotelId:'',limit:'20'},null,'Guest reviews with sentiment analysis.'],
+ ['Rates','Full rates (by place)','POST','api','/hotels/rates',{},()=>({checkin:day(21),checkout:day(24),currency:'EUR',guestNationality:'GR',placeId:'PASTE_PLACE_ID',occupancies:[{adults:2,children:[7]}],includeHotelData:true,maxRatesPerHotel:3,limit:5,timeout:10}),'Live rooms and rates. Replace placeId (from Places autocomplete).'],
+ ['Rates','Full rates (by hotel IDs)','POST','api','/hotels/rates',{},()=>({checkin:day(21),checkout:day(24),currency:'EUR',guestNationality:'GR',hotelIds:['PASTE_HOTEL_ID'],occupancies:[{adults:2},{adults:1}],timeout:10}),'Two-room example. Replace the hotel ID.'],
+ ['Rates','Minimum rates','POST','api','/hotels/min-rates',{},()=>({checkin:day(21),checkout:day(24),currency:'EUR',guestNationality:'GR',hotelIds:['PASTE_HOTEL_ID'],occupancies:[{adults:2}],timeout:10}),'Cheapest price per hotel only (fast).'],
+ ['Booking','Prebook (test)','POST','book','/rates/prebook',{},()=>({offerId:'PASTE_OFFER_ID',usePaymentSdk:true}),'Locks a rate and creates a payment intent. Use an offerId from Full rates.','Creates a payment intent. Nothing is charged until payment.'],
+ ['Booking','List bookings','GET','book','/bookings?clientReference={clientReference}',{clientReference:''},null,'Find bookings by your client reference (shown on the confirmation page, e.g. PX-…).'],
+ ['Booking','Retrieve booking','GET','book','/bookings/{bookingId}',{bookingId:''},null,'Full booking record.'],
+ ['Booking','Cancel booking','PUT','book','/bookings/{bookingId}',{bookingId:''},null,'Cancels per the rate’s policy.','This really cancels the booking.'],
+ ['Guests & loyalty','Loyalty settings','GET','api','/loyalties/',{},null,'Your loyalty / cashback program settings.'],
+ ['Guests & loyalty','Guest profile','GET','api','/guests/{guestId}',{guestId:''},null,'Guest record (requires a guestId from the loyalty program).'],
+ ['Guests & loyalty','Guest bookings','GET','api','/guests/{guestId}/bookings',{guestId:''},null,'Bookings for a loyalty guest.'],
+ ['Vouchers','List vouchers','GET','da','/vouchers',{},null,'All vouchers on your account.'],
+ ['Vouchers','Create voucher','POST','da','/vouchers',{},()=>({voucher_code:'AEGEAN10',discount_type:'percentage',discount_value:10,minimum_spend:100,maximum_discount_amount:50,currency:'EUR',validity_start:day(0),validity_end:day(90),usages_limit:10,status:'active'}),'Then try code AEGEAN10 at checkout on the site.','Creates a real voucher on your account.'],
+ ['Analytics','Weekly analytics','POST','da','/analytics/weekly',{},()=>({from:day(-30),to:day(0)}),'Bookings and revenue per week.'],
+ ['Analytics','Analytics report','POST','da','/analytics/report',{},()=>({from:day(-30),to:day(0)}),'Detailed report for a date range.'],
+ ['Analytics','Market analytics','POST','da','/analytics/markets',{},()=>({from:day(-30),to:day(0)}),'Performance by market.'],
+ ['Analytics','Most booked hotels','POST','da','/analytics/hotels',{},()=>({from:day(-30),to:day(0)}),'Top hotels by bookings.'],
+];
+let cur=null, last=null;
+let g=''; $('list').innerHTML=EP.map((e,i)=>(e[0]!==g?`<div class="grp">${g=e[0]}</div>`:'')+`<div class="ep" data-i="${i}"><span class="m ${e[2]}">${e[2]}</span><span>${esc(e[1])}</span></div>`).join('');
+$('list').onclick=ev=>{const el=ev.target.closest('.ep'); if(!el) return; document.querySelectorAll('.ep').forEach(x=>x.classList.toggle('on',x===el)); open(+el.dataset.i);};
+function open(i){
+  cur=EP[i]; const [,title,m,target,p,params,body,desc,warn]=cur;
+  $('ep').style.display='block'; $('intro').style.display='none';
+  $('epM').className='m '+m; $('epM').textContent=m; $('epT').textContent=title; $('epD').textContent=desc||'';
+  $('epP').innerHTML=Object.entries(params).map(([k,v])=>`<div><label>${esc(k)}</label><input data-p="${esc(k)}" value="${esc(v)}"></div>`).join('');
+  $('bodyWrap').style.display=body?'block':'none'; $('body').value=body?JSON.stringify(body(),null,2):'';
+  $('epW').innerHTML=warn?`<div class="warn">⚠️ ${esc(warn)}</div>`:''; $('stat').innerHTML=''; showUrl();
+}
+function build(){ let p=cur[4]; document.querySelectorAll('[data-p]').forEach(inp=>{ p=p.replace('{'+inp.dataset.p+'}',encodeURIComponent(inp.value.trim())); }); return p; }
+function showUrl(){ const host={api:'api.liteapi.travel/v3.0',book:'book.liteapi.travel/v3.0',da:'da.liteapi.travel'}[cur[3]]; $('epU').textContent=cur[2]+' https://'+host+build(); }
+$('epP').oninput=showUrl;
+function hl(json){ return esc(json).replace(/(&quot;(?:\\.|[^&])*?&quot;)(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d+)?(?:e[+-]?\d+)?/g,(m,s,colon,b)=>s?(colon?`<span class="k">${s}</span>${colon}`:`<span class="s">${s}</span>`):b?`<span class="b">${m}</span>`:`<span class="n">${m}</span>`); }
+$('send').onclick=async()=>{
+  if(!PW) return alert('Enter the lab password first.');
+  if(cur[8] && !confirm(cur[8]+' Continue?')) return;
+  let body; if(cur[6]){ try{ body=JSON.parse($('body').value) }catch{ return alert('The JSON body is not valid JSON.'); } }
+  $('send').disabled=true; $('stat').innerHTML='<span class="mute">Sending…</span>';
+  try{
+    const r=await fetch('/api/lab/call',{method:'POST',headers:{'content-type':'application/json','x-lab-key':PW},body:JSON.stringify({method:cur[2],target:cur[3],path:build(),body})});
+    const j=await r.json(); if(!r.ok&&j.error&&!('ok' in j)) throw new Error(j.error);
+    last=j.data??j; const size=JSON.stringify(last).length;
+    $('stat').innerHTML=`<span class="st ${j.ok?'ok':'bad'}">${j.ok?'200 OK':(j.status||'Error')}</span> <span class="mute">${j.ms} ms · ${(size/1024).toFixed(1)} KB${Array.isArray(last?.data)?` · ${last.data.length} items`:''}</span>${j.error?` <span class="mute">${esc(j.error)}</span>`:''}`;
+    const txt=JSON.stringify(last,null,2); $('out').innerHTML=hl(txt.length>400000?txt.slice(0,400000)+'\n… (truncated for display)':txt); $('outCard').style.display='block';
+  }catch(e){ $('stat').innerHTML=`<span class="st bad">Error</span> <span class="mute">${esc(e.message)}</span>`; }
+  $('send').disabled=false; loadLog();
+};
+$('copy').onclick=()=>{ navigator.clipboard?.writeText(JSON.stringify(last,null,2)); $('copy').textContent='Copied'; setTimeout(()=>$('copy').textContent='Copy JSON',1200); };
+async function loadLog(){
+  if(!PW) return;
+  try{ const r=await fetch('/api/lab/log',{headers:{'x-lab-key':PW}}); const j=await r.json(); if(!r.ok) throw new Error(j.error);
+    $('log').innerHTML=j.map(l=>`<tr><td>${new Date(l.at).toLocaleTimeString()}</td><td><span class="m ${l.method}">${l.method}</span></td><td><span class="st ${l.status>=200&&l.status<300?'ok':'bad'}">${l.status||'ERR'}</span></td><td>${l.ms}</td><td>${esc(l.url)}</td></tr>`).join('')||'<tr><td colspan="5" class="mute">No calls yet.</td></tr>';
+  }catch(e){ $('log').innerHTML=`<tr><td colspan="5" class="mute">${esc(e.message)}</td></tr>`; }
+}
+$('refresh').onclick=loadLog; loadLog();
+</script>
+</body>
+</html>
