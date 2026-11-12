@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stays — Hotel Booking</title>
+<script src="https://payment-wrapper.liteapi.travel/dist/liteAPIPayment.js?v=a1"></script>
+<style>
+  :root{--bg:#f6f5f2;--card:#fff;--ink:#1c1c1c;--mute:#6b6b6b;--acc:#2f5d50;--line:#e4e1da}
+  *{box-sizing:border-box}body{margin:0;font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--ink)}
+  header{padding:28px 16px 8px;max-width:1000px;margin:auto}h1{margin:0;font-size:26px}header p{margin:4px 0 0;color:var(--mute)}
+  main{max-width:1000px;margin:auto;padding:16px}
+  .search{display:grid;grid-template-columns:2fr 1fr 1fr 80px auto;gap:8px;background:var(--card);padding:12px;border-radius:12px;border:1px solid var(--line)}
+  input,button{font:inherit;padding:10px 12px;border-radius:8px;border:1px solid var(--line);width:100%}
+  button{background:var(--acc);color:#fff;border:0;cursor:pointer;font-weight:600}button:disabled{opacity:.5}
+  .ac{position:relative}.ac ul{position:absolute;z-index:5;left:0;right:0;top:100%;margin:4px 0;padding:0;list-style:none;background:#fff;border:1px solid var(--line);border-radius:8px;max-height:240px;overflow:auto}
+  .ac li{padding:8px 12px;cursor:pointer}.ac li:hover{background:var(--bg)}.ac small{color:var(--mute)}
+  .hotel{display:grid;grid-template-columns:220px 1fr;gap:16px;background:var(--card);border:1px solid var(--line);border-radius:12px;margin-top:14px;overflow:hidden}
+  .hotel img{width:100%;height:100%;min-height:160px;object-fit:cover;background:#ddd}.hotel .b{padding:14px 14px 14px 0}
+  .hotel h3{margin:0}.mute{color:var(--mute);font-size:13px}
+  .offer{display:flex;justify-content:space-between;align-items:center;gap:10px;border-top:1px solid var(--line);padding:8px 0}
+  .offer button{width:auto;padding:8px 14px}.tag{font-size:12px;padding:2px 6px;border-radius:4px;background:#e7f0ec;color:var(--acc);margin-left:6px}
+  .tag.n{background:#f3e9e4;color:#8a4b2f}.price{font-weight:700;white-space:nowrap}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-top:14px;max-width:560px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}.note{background:#fff8e1;border:1px solid #f0e2a8;padding:8px 10px;border-radius:8px;font-size:13px}
+  .msg{padding:20px;text-align:center;color:var(--mute)}.hidden{display:none}
+  @media(max-width:700px){.search{grid-template-columns:1fr 1fr}.search .ac{grid-column:1/-1}.hotel{grid-template-columns:1fr}.hotel .b{padding:0 14px 14px}.hotel img{height:180px}}
+</style>
+</head>
+<body>
+<header><h1>Stays</h1><p>Search hotels, pick a room, book in a minute.</p></header>
+<main>
+  <!-- SEARCH -->
+  <section id="vSearch">
+    <form class="search" id="f">
+      <div class="ac"><input id="dest" placeholder="Where to? (e.g. Kraków)" autocomplete="off" required><ul id="sug" class="hidden"></ul></div>
+      <input type="date" id="ci" required><input type="date" id="co" required>
+      <input type="number" id="ad" min="1" max="6" value="2" title="Adults">
+      <button id="go">Search</button>
+    </form>
+    <div id="results"></div>
+  </section>
+
+  <!-- CHECKOUT -->
+  <section id="vCheckout" class="hidden">
+    <div class="panel">
+      <a href="#" id="back">← Back to results</a>
+      <h2 id="ckTitle" style="margin:8px 0 0"></h2><div id="ckSub" class="mute"></div>
+      <div class="row"><input id="fn" placeholder="First name"><input id="ln" placeholder="Last name"></div>
+      <input id="em" type="email" placeholder="Email">
+      <button id="pay" style="margin-top:10px">Continue to payment</button>
+      <div id="sbNote" class="note hidden" style="margin-top:10px">Sandbox: use card 4242 4242 4242 4242, any future expiry, any 3-digit CVC.</div>
+      <div id="payment" style="margin-top:12px"></div>
+    </div>
+  </section>
+
+  <!-- CONFIRMATION -->
+  <section id="vDone" class="hidden"><div class="panel" id="done"></div></section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const api = (u, body) => fetch(u, body ? {method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)} : {})
+  .then(async r => { const j = await r.json(); if (!r.ok) throw new Error(j.error || 'Request failed'); return j; });
+const money = (a,c) => new Intl.NumberFormat('en',{style:'currency',currency:c||'EUR'}).format(a);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const show = v => ['vSearch','vCheckout','vDone'].forEach(x => $(x).classList.toggle('hidden', x !== v));
+let CFG = {sandbox:true}, placeId = null, selected = null;
+
+api('/api/config').then(c => CFG = c);
+
+// dates default: +14 / +16 days
+const d = n => new Date(Date.now()+n*864e5).toISOString().slice(0,10);
+$('ci').value = d(14); $('co').value = d(16);
+
+// autocomplete
+let t;
+$('dest').addEventListener('input', e => {
+  placeId = null; clearTimeout(t);
+  const q = e.target.value.trim(); if (q.length < 2) return $('sug').classList.add('hidden');
+  t = setTimeout(async () => {
+    const list = await api('/api/places?q='+encodeURIComponent(q)).catch(()=>[]);
+    $('sug').innerHTML = list.slice(0,8).map(p => `<li data-id="${esc(p.placeId)}" data-n="${esc(p.displayName)}">${esc(p.displayName)} <small>${esc(p.formattedAddress||'')}</small></li>`).join('');
+    $('sug').classList.toggle('hidden', !list.length);
+  }, 250);
+});
+$('sug').addEventListener('click', e => {
+  const li = e.target.closest('li'); if (!li) return;
+  placeId = li.dataset.id; $('dest').value = li.dataset.n; $('sug').classList.add('hidden');
+});
+
+// search
+$('f').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (!placeId) { $('results').innerHTML = '<div class="msg">Pick a destination from the list.</div>'; return; }
+  $('go').disabled = true; $('results').innerHTML = '<div class="msg">Searching live rates…</div>';
+  try {
+    const hotels = await api('/api/rates', {placeId, checkin:$('ci').value, checkout:$('co').value, adults:$('ad').value});
+    $('results').innerHTML = hotels.length ? hotels.map(h => `
+      <div class="hotel">
+        <img src="${esc(h.photo)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
+        <div class="b">
+          <h3>${esc(h.name)} ${h.stars ? '<span class="mute">'+'★'.repeat(Math.round(h.stars))+'</span>' : ''}</h3>
+          <div class="mute">${esc(h.address)}</div>
+          <div class="mute" style="margin:4px 0 6px">From <b>${money(h.from,h.currency)}</b> total</div>
+          ${h.offers.slice(0,4).map(o => `
+            <div class="offer"><div>${esc(o.room)}<span class="tag ${o.refundable?'':'n'}">${o.refundable?'Free cancellation':'Non-refundable'}</span>
+              <div class="mute">${esc(o.board)}</div></div>
+              <div style="display:flex;gap:10px;align-items:center"><span class="price">${money(o.price,o.currency)}</span>
+              <button data-o='${esc(JSON.stringify({...o,hotel:h.name}))}'>Select</button></div></div>`).join('')}
+        </div>
+      </div>`).join('') : '<div class="msg">No availability for these dates.</div>';
+  } catch(err) { $('results').innerHTML = `<div class="msg">${esc(err.message)}</div>`; }
+  $('go').disabled = false;
+});
+
+$('results').addEventListener('click', e => {
+  const b = e.target.closest('button[data-o]'); if (!b) return;
+  selected = JSON.parse(b.dataset.o);
+  $('ckTitle').textContent = selected.hotel;
+  $('ckSub').textContent = `${selected.room} · ${$('ci').value} → ${$('co').value} · ${money(selected.price, selected.currency)}`;
+  $('payment').innerHTML = ''; $('pay').disabled = false; show('vCheckout'); scrollTo(0,0);
+});
+$('back').onclick = e => { e.preventDefault(); show('vSearch'); };
+
+// prebook + payment SDK
+$('pay').addEventListener('click', async () => {
+  const guest = {firstName:$('fn').value.trim(), lastName:$('ln').value.trim(), email:$('em').value.trim()};
+  if (!guest.firstName || !guest.lastName || !/\S+@\S+/.test(guest.email)) return alert('Please fill in name and email.');
+  $('pay').disabled = true; $('payment').innerHTML = '<div class="mute">Locking the rate (5–10s)…</div>';
+  try {
+    const pb = await api('/api/prebook', {offerId: selected.offerId});
+    sessionStorage.setItem('booking', JSON.stringify({...guest, prebookId: pb.prebookId, transactionId: pb.transactionId, summary: $('ckTitle').textContent + ' — ' + $('ckSub').textContent}));
+    $('sbNote').classList.toggle('hidden', !CFG.sandbox);
+    $('payment').innerHTML = '<div id="targetElement"></div>';
+    const ret = `${location.origin}${location.pathname}?pb=${encodeURIComponent(pb.prebookId)}&tx=${encodeURIComponent(pb.transactionId)}`;
+    new LiteAPIPayment({ publicKey: CFG.sandbox ? 'sandbox' : 'live', secretKey: pb.secretKey, returnUrl: ret, targetElement: '#targetElement', appearance:{theme:'flat'}, options:{business:{name:'Stays'}} }).handlePayment();
+  } catch(err) { $('payment').innerHTML = `<div class="note">${esc(err.message)}</div>`; $('pay').disabled = false; }
+});
+
+// return from payment -> book
+(async () => {
+  const p = new URLSearchParams(location.search); if (!p.get('pb')) return;
+  show('vDone'); $('done').innerHTML = '<div class="mute">Confirming your booking…</div>';
+  const s = JSON.parse(sessionStorage.getItem('booking') || '{}');
+  try {
+    const b = await api('/api/book', {...s, prebookId: p.get('pb'), transactionId: p.get('tx')});
+    $('done').innerHTML = `<h2>Booking confirmed ✅</h2><p>${esc(s.summary||'')}</p>
+      <p>Booking ID: <b>${esc(b.bookingId)}</b><br>Hotel confirmation: <b>${esc(b.hotelConfirmationCode||'pending')}</b><br>Status: ${esc(b.status||'')}</p>
+      <p class="mute">A confirmation goes to ${esc(s.email||'')}.</p><a href="/">New search</a>`;
+    sessionStorage.removeItem('booking'); history.replaceState({}, '', '/');
+  } catch(err) { $('done').innerHTML = `<h2>Booking failed</h2><p>${esc(err.message)}</p><a href="/">Back</a>`; }
+})();
+</script>
+</body>
+</html>
