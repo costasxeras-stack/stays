@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Room Mapping Inspector — Philoxenia</title>
+<title>Room Mapping Inspector — KostasTravel</title>
 <meta name="robots" content="noindex">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -52,7 +52,7 @@ tbody tr:hover{background:var(--foam)}td.num,th.num{text-align:right}
 </style>
 </head>
 <body>
-<header><div class="w"><h1>ROOM MAPPING INSPECTOR</h1><span class="mute" style="color:#9fb2cc">Nuitee LiteAPI · roomMapping</span><a href="/">← Philoxenia</a> <a href="/lab" style="margin-left:0">API Lab</a></div></header>
+<header><div class="w"><h1>ROOM MAPPING INSPECTOR</h1><span class="mute" style="color:#9fb2cc">Nuitee LiteAPI · roomMapping</span><a href="/">← KostasTravel</a> <a href="/lab" style="margin-left:0">API Lab</a></div></header>
 <div class="meander"></div>
 <div class="w">
   <div class="intro">
@@ -105,7 +105,16 @@ let placeId=null, scan=[], sortK='opp', sortD=-1, lastHotel=null;
 
 /* tabs */
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>tab(b.dataset.t));
-function tab(t){document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));$('tScan').classList.toggle('hidden',t!=='scan');$('tHotel').classList.toggle('hidden',t!=='hotel');}
+// Browser history: switching between scan and hotel gets its own entry, so the back arrow works
+history.replaceState({t:'scan'}, '', location.pathname);
+addEventListener('popstate', e => {
+  const s = e.state || {t:'scan'};
+  if (s.t==='hotel' && s.id && s.id!==lastHotel?.hotel?.id) return inspect(s.id, false);
+  tab(s.t, false);
+});
+function tab(t, push=true, id){
+  if (push && (history.state?.t!==t || (id && history.state?.id!==id))) history.pushState({t, id}, '', location.pathname + (t==='hotel' && id ? '#hotel-'+encodeURIComponent(id) : '#'+t));
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));$('tScan').classList.toggle('hidden',t!=='scan');$('tHotel').classList.toggle('hidden',t!=='hotel');}
 
 /* autocomplete */
 let tm; $('dest').oninput=e=>{placeId=null;clearTimeout(tm);const q=e.target.value.trim();if(q.length<2)return $('sug').classList.add('hidden');
@@ -165,8 +174,8 @@ function flagsFor(supplier, master){
   for(const g of Object.keys(GROUPS)) if(a[g]&&b[g]&&!a[g].some(t=>b[g].includes(t))) f.push(`${g}: "${a[g].join('/')}" vs master "${b[g].join('/')}"`);
   return f;
 }
-async function inspect(id){
-  tab('hotel'); $('hid').value=id; $('hotelOut').innerHTML='<div class="skel"></div><div class="skel"></div><div class="skel"></div>';
+async function inspect(id, push=true){
+  tab('hotel', push, id); $('hid').value=id; $('hotelOut').innerHTML='<div class="skel"></div><div class="skel"></div><div class="skel"></div>';
   try{ lastHotel=await api('/api/mapping/hotel',{hotelId:id,...q()}); drawHotel(); }
   catch(e){ $('hotelOut').innerHTML=`<div class="card empty">${esc(e.message)}</div>`; }
 }

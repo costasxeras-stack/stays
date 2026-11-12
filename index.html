@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Philoxenia — Greek Hospitality, Anywhere</title>
+<title>KostasTravel — Greek Hospitality, Anywhere</title>
 <meta name="description" content="Hand-picked hotels with live rates, AI vibe search and instant confirmation.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -213,9 +213,9 @@ footer .bottom{border-top:1px solid rgba(255,255,255,.1);padding-top:20px;displa
 
 <!-- ================= NAV ================= -->
 <header class="nav"><div class="wrap">
-  <a class="logo" href="/" aria-label="Philoxenia home">
+  <a class="logo" href="/" aria-label="KostasTravel home">
     <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="16" cy="16" r="14"/><path d="M9 22V11h14v11M13 22v-7h6v7M8 11l8-5 8 5"/></svg>
-    PHILOXENIA</a>
+    KOSTASTRAVEL</a>
   <nav><a href="#destinations" data-home>Destinations</a><a href="#" id="navAI">AI search</a><a href="#" id="navManage">Manage booking</a></nav>
   <div class="prefs">
     <select id="cur" aria-label="Currency"><option value="EUR">EUR €</option></select>
@@ -268,7 +268,7 @@ footer .bottom{border-top:1px solid rgba(255,255,255,.1);padding-top:20px;displa
   </div></section>
 
   <section class="block" style="padding-top:0"><div class="wrap">
-    <div class="secHead"><div><div class="eyebrow">Φιλοξενία · The Philoxenia way</div><h2>Booking, done the Greek way</h2></div></div>
+    <div class="secHead"><div><div class="eyebrow">Φιλοξενία · The KostasTravel way</div><h2>Booking, done the Greek way</h2></div></div>
     <div class="why">
       <div class="wcard"><div class="ic">⚡</div><h3>Live rates</h3><p class="mute">Prices and rooms pulled in real time, then re-checked before you pay.</p></div>
       <div class="wcard"><div class="ic">✨</div><h3>AI concierge</h3><p class="mute">Describe the stay you want in plain words. We find hotels that match the feeling.</p></div>
@@ -355,12 +355,12 @@ footer .bottom{border-top:1px solid rgba(255,255,255,.1);padding-top:20px;displa
   <div class="meander" style="opacity:.6"></div>
   <div class="wrap">
     <div class="cols">
-      <div><a class="logo" href="/" style="color:#fff;opacity:1">PHILOXENIA</a><p style="max-width:340px">Greek hospitality, wherever you wander. Hotel rates and bookings powered by Nuitee LiteAPI.</p></div>
+      <div><a class="logo" href="/" style="color:#fff;opacity:1">KOSTASTRAVEL</a><p style="max-width:340px">Greek hospitality, wherever you wander. Hotel rates and bookings powered by Nuitee LiteAPI.</p></div>
       <div><h5>Explore</h5><a data-city="Santorini">Santorini</a><a data-city="Mykonos">Mykonos</a><a data-city="Athens">Athens</a><a data-city="Crete">Crete</a></div>
       <div><h5>Travellers</h5><a id="fManage">Manage booking</a><a id="fAI">AI concierge</a></div>
       <div><h5>Developers</h5><a href="/mapping">Room Mapping Inspector</a><a href="/lab">API Lab</a></div>
     </div>
-    <div class="bottom"><span>© 2026 Philoxenia</span><span id="envTag"></span></div>
+    <div class="bottom"><span>© 2026 KostasTravel</span><span id="envTag"></span></div>
   </div>
 </footer>
 <div class="toast hidden" id="toast"></div>
@@ -384,7 +384,24 @@ const scoreWord = s => s>=9?'Exceptional':s>=8.5?'Excellent':s>=8?'Very good':s>
 function toast(m){ $('toast').textContent=m; $('toast').classList.remove('hidden'); clearTimeout(toast.t); toast.t=setTimeout(()=>$('toast').classList.add('hidden'),3800); }
 
 /* ================= views ================= */
-function view(v){
+// Browser history: every page switch gets its own entry, so the browser's back/forward arrows work
+const HASH = {vHome:'', vResults:'#results', vCheckout:'#checkout', vDone:'#confirmed', vManage:'#manage'};
+function view(v, how='push'){
+  const url = location.pathname + (HASH[v]||'');
+  if (how==='push' && history.state?.v !== v) history.pushState({v}, '', url);
+  else if (how!=='none') history.replaceState({v}, '', url);
+  showView(v);
+}
+addEventListener('popstate', e => {
+  closeModal(true);
+  let v = e.state?.v || 'vHome';
+  if (v==='vResults' && !S.hotels.length) v='vHome';      // nothing to show (e.g. after a reload)
+  if (v==='vCheckout' && !S.sel) v = S.hotels.length ? 'vResults' : 'vHome';
+  if (v==='vDone') v='vHome';                              // never re-run a booking from history
+  if (e.state?.modal && v==='vResults') { showView('vResults'); return openHotel(e.state.modal, false); }
+  showView(v);
+});
+function showView(v){
   ['vHome','vResults','vCheckout','vDone','vManage'].forEach(x => $(x).classList.toggle('hidden', x!==v));
   const home = v==='vHome';
   document.body.classList.toggle('solid', !home);
@@ -584,8 +601,13 @@ document.addEventListener('click', e => {
 });
 $('mx').onclick = () => closeModal(); $('modal').onclick = e => { if (e.target.id==='modal') closeModal(); };
 document.addEventListener('keydown', e => { if (e.key==='Escape') closeModal(); });
-function closeModal(){ $('modal').classList.add('hidden'); document.body.style.overflow=''; }
-async function openHotel(id){
+function closeModal(fromHistory){
+  if ($('modal').classList.contains('hidden')) return;
+  if (!fromHistory && history.state?.modal) return history.back();   // back arrow and × behave the same
+  $('modal').classList.add('hidden'); document.body.style.overflow='';
+}
+async function openHotel(id, push=true){
+  if (push) history.pushState({v:'vResults', modal:id}, '', location.pathname + '#hotel-' + encodeURIComponent(id));
   const h=S.hotels.find(x=>x.hotelId===id); if(!h) return;
   $('modal').classList.remove('hidden'); document.body.style.overflow='hidden';
   $('mbody').innerHTML = `<div class="gal"><div style="background-image:url('${esc(h.photo)}')"></div><div></div><div></div><div></div><div></div></div>
@@ -636,12 +658,12 @@ async function openHotel(id){
 
 /* ================= checkout ================= */
 function select(h, o){
-  closeModal(); S.sel={h,o}; const n=nights();
+  const fromModal = !!history.state?.modal; closeModal(true); S.sel={h,o}; const n=nights();
   $('ckImg').style.backgroundImage=`url('${h.photo}')`; $('ckStars').textContent=h.stars?'★'.repeat(Math.round(h.stars)):''; $('ckTitle').textContent=h.name;
   drawSummary(o.price, o.currency);
   $('payment').innerHTML=''; $('checkRes').innerHTML=''; $('pay').disabled=false; $('pay').classList.remove('hidden'); $('sbNote').classList.add('hidden'); $('st2').classList.remove('on');
   const g=store.get('guest',{}); ['fn','ln','em'].forEach(k=>{ if(g[k]&&!$(k).value) $(k).value=g[k]; });
-  view('vCheckout');
+  view('vCheckout', fromModal ? 'replace' : 'push');   // back from checkout returns to the results
 }
 function drawSummary(price, cur, extra=''){
   const {h,o}=S.sel, n=nights();
@@ -656,7 +678,7 @@ function drawSummary(price, cur, extra=''){
     <div class="ln2 tot"><span>Total</span><span>${money(price,cur)}</span></div>
     ${o.payAtHotel?`<div class="mute">Plus ${money(o.payAtHotel,o.currency)} in local taxes/fees paid at the hotel.</div>`:'<div class="mute">Taxes and fees included.</div>'}`;
 }
-$('back').onclick = e => { e.preventDefault(); view('vResults'); };
+$('back').onclick = e => { e.preventDefault(); history.state?.v==='vCheckout' && S.hotels.length ? history.back() : view('vResults'); };
 
 $('pay').addEventListener('click', async () => {
   const g={firstName:$('fn').value.trim(), lastName:$('ln').value.trim(), email:$('em').value.trim()};
@@ -681,14 +703,14 @@ $('pay').addEventListener('click', async () => {
     $('payment').innerHTML = '<div id="targetElement"></div>';
     new LiteAPIPayment({ publicKey: S.cfg.sandbox?'sandbox':'live', secretKey: pb.secretKey,
       returnUrl: `${location.origin}/?pb=${encodeURIComponent(pb.prebookId)}&tx=${encodeURIComponent(pb.transactionId)}`,
-      targetElement:'#targetElement', appearance:{theme:'flat'}, options:{business:{name:'Philoxenia'}} }).handlePayment();
+      targetElement:'#targetElement', appearance:{theme:'flat'}, options:{business:{name:'KostasTravel'}} }).handlePayment();
   } catch(err){ $('checkRes').innerHTML=`<div class="note warn">${esc(err.message)}</div>`; $('pay').disabled=false; }
 });
 
 /* ================= return from payment → book ================= */
 (async () => {
-  const p=new URLSearchParams(location.search); if (!p.get('pb')) return view('vHome');
-  view('vDone'); $('done').innerHTML='<div class="seal">…</div><h2>Confirming your booking</h2><p class="mute">This takes a few seconds.</p>';
+  const p=new URLSearchParams(location.search); if (!p.get('pb')) return view('vHome','replace');
+  view('vDone','replace'); $('done').innerHTML='<div class="seal">…</div><h2>Confirming your booking</h2><p class="mute">This takes a few seconds.</p>';
   const s=JSON.parse(sessionStorage.getItem('px')||'{}');
   try {
     const b=await api('/api/book', {...s, prebookId:p.get('pb'), transactionId:p.get('tx')});

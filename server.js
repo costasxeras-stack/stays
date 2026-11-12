@@ -1,4 +1,4 @@
-// Philoxenia — LiteAPI (Nuitee) booking platform + API Lab
+// KostasTravel — LiteAPI (Nuitee) booking platform + API Lab
 // Site flow: places / AI search -> rates -> hotel details + reviews -> prebook (+voucher) -> Payment SDK -> book -> manage/cancel
 require('dotenv').config();
 const express = require('express');
