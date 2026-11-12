@@ -1,4 +1,4 @@
-# Philoxenia — Nuitee LiteAPI demo
+# KostasTravel — Nuitee LiteAPI demo
 
 Pages
 - /          Booking site: destination + AI search, multi-room/children, filters, hotel photos/reviews/AI sentiment, prebook (price check, voucher, cancellation timeline), Payment SDK, booking, manage/cancel
