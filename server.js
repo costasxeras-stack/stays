@@ -109,7 +109,7 @@ app.post('/api/rates', wrap(async (req, res) => {
   }));
   const q = {
     checkin, checkout, currency, guestNationality: nationality, occupancies,
-    includeHotelData: true, roomMapping: true, maxRatesPerHotel: 10, limit: 200, timeout: 20,
+    includeHotelData: true, roomMapping: true, maxRatesPerHotel: 10, limit: 200, timeout: 30,
   };
   if (hotelIds?.length) q.hotelIds = hotelIds.slice(0, 50); else q.placeId = placeId;
   const data = await post('api', '/hotels/rates', q);
@@ -156,15 +156,22 @@ app.get('/api/hotel/:id', wrap(async (req, res) => {
   res.json({
     name: d.name, description: strip(d.hotelDescription || d.description),
     important: strip(d.hotelImportantInformation),
-    images: [...new Set(imgs)].slice(0, 16), facilities: [...new Set(fac)].slice(0, 24),
+    images: [...new Set(imgs)].slice(0, 40), facilities: [...new Set(fac)].slice(0, 60),
     address: [d.address, d.city, d.country].filter(Boolean).join(', '),
-    checkin: d.checkinCheckoutTimes?.checkin || '', checkout: d.checkinCheckoutTimes?.checkout || '',
+    // check-in/out field names vary, so take the first one present
+    checkin: pickTime(d, ['checkin', 'checkin_start', 'checkinStart', 'checkIn']),
+    checkout: pickTime(d, ['checkout', 'checkout_end', 'checkoutEnd', 'checkOut']),
     stars: d.starRating || null, score: d.rating || null, reviews: d.reviewCount || null,
     lat: d.location?.latitude || d.latitude || null, lng: d.location?.longitude || d.longitude || null,
     rooms: contentRooms(d).map(r => ({ id: r.id, name: r.name, photo: r.photos[0] || '' })),
   });
 }));
 
+function pickTime(d, keys) {
+  const t = d.checkinCheckoutTimes || d.checkInCheckOutTimes || d;
+  for (const k of keys) if (t && t[k]) return String(t[k]);
+  return '';
+}
 // ---------- Room mapping (Mapping & Content) ----------
 const strip = s => String(s || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 function contentRooms(d) {
@@ -207,7 +214,7 @@ app.post('/api/mapping/scan', wrap(async (req, res) => {
   const { placeId, checkin, checkout, adults = 2, currency = 'EUR', nationality = 'GR' } = req.body;
   const data = await post('api', '/hotels/rates', {
     placeId, checkin, checkout, currency, guestNationality: nationality, occupancies: [{ adults: Number(adults) || 2 }],
-    roomMapping: true, includeHotelData: true, maxRatesPerHotel: 100, limit: 200, timeout: 20,
+    roomMapping: true, includeHotelData: true, maxRatesPerHotel: 100, limit: 200, timeout: 30,
   });
   const info = {}; (data.hotels || []).forEach(h => { info[h.id] = h; });
   res.json((data.data || []).map(h => {
