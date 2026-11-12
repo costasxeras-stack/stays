@@ -109,7 +109,7 @@ app.post('/api/rates', wrap(async (req, res) => {
   }));
   const q = {
     checkin, checkout, currency, guestNationality: nationality, occupancies,
-    includeHotelData: true, roomMapping: true, maxRatesPerHotel: 20, limit: 40, timeout: 12,
+    includeHotelData: true, roomMapping: true, maxRatesPerHotel: 10, limit: 200, timeout: 20,
   };
   if (hotelIds?.length) q.hotelIds = hotelIds.slice(0, 50); else q.placeId = placeId;
   const data = await post('api', '/hotels/rates', q);
@@ -207,7 +207,7 @@ app.post('/api/mapping/scan', wrap(async (req, res) => {
   const { placeId, checkin, checkout, adults = 2, currency = 'EUR', nationality = 'GR' } = req.body;
   const data = await post('api', '/hotels/rates', {
     placeId, checkin, checkout, currency, guestNationality: nationality, occupancies: [{ adults: Number(adults) || 2 }],
-    roomMapping: true, includeHotelData: true, maxRatesPerHotel: 200, limit: 40, timeout: 15,
+    roomMapping: true, includeHotelData: true, maxRatesPerHotel: 100, limit: 200, timeout: 20,
   });
   const info = {}; (data.hotels || []).forEach(h => { info[h.id] = h; });
   res.json((data.data || []).map(h => {
