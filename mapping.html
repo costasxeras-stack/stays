@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Room Mapping Inspector — Philoxenia</title>
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--deep:#0b2240;--aegean:#1d4f91;--sea:#2f7fc1;--foam:#e9f1fa;--marble:#f8f6f1;--line:#e4e0d6;--mute:#667085;--gold:#b8975a;--olive:#5f7a3a;--terra:#c4583c;--amber:#b7791f;
+  --meander:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='24' fill='none' stroke='%23b8975a' stroke-width='2'%3E%3Cpath d='M0 22H28M4 22V2h18v16H10V8h6v5'/%3E%3C/svg%3E")}
+*{box-sizing:border-box}body{margin:0;font:14px/1.55 'Manrope',system-ui,sans-serif;background:var(--marble);color:#15202e}
+button,input,select{font:inherit}.hidden{display:none!important}.mute{color:var(--mute);font-size:13px}
+header{background:var(--deep);color:#fff}header .w{display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:18px 20px;max-width:1240px;margin:auto}
+header h1{font:600 28px 'Cormorant Garamond',serif;margin:0;letter-spacing:.04em}header a{color:#c7d6ea;font-size:13px;margin-left:auto}
+.meander{height:24px;background:var(--meander) repeat-x center;background-color:var(--deep)}
+.w{max-width:1240px;margin:auto;padding:0 20px}
+.intro{display:grid;grid-template-columns:1.4fr 1fr;gap:22px;margin:26px 0}
+.card{background:#fff;border-radius:16px;padding:20px;box-shadow:0 1px 2px rgba(11,34,64,.05),0 10px 28px rgba(11,34,64,.07)}
+h2{font:600 30px 'Cormorant Garamond',serif;margin:0 0 6px}h3{margin:0 0 6px;font-size:16px}
+.eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);font-weight:700}
+.ctrl{display:grid;grid-template-columns:2fr 1fr 1fr .7fr auto;gap:10px;align-items:end}
+.ctrl label{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+.in{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;margin-top:4px}
+.btn{background:var(--aegean);color:#fff;border:0;border-radius:10px;padding:12px 18px;font-weight:700;cursor:pointer;white-space:nowrap}.btn:hover{background:var(--deep)}.btn:disabled{opacity:.5}
+.btn.ghost{background:#fff;color:var(--aegean);border:1.5px solid var(--aegean)}
+.ac{position:relative}#sug{position:absolute;z-index:10;top:100%;left:0;right:0;background:#fff;border-radius:10px;box-shadow:0 14px 30px rgba(0,0,0,.15);list-style:none;margin:4px 0;padding:6px}
+#sug li{padding:8px 10px;border-radius:8px;cursor:pointer}#sug li:hover{background:var(--foam)}
+.tabs{display:flex;gap:6px;margin:0 0 14px}.tabs button{border:0;background:#fff;padding:10px 16px;border-radius:10px;font-weight:700;color:var(--mute);cursor:pointer;box-shadow:0 2px 8px rgba(11,34,64,.06)}
+.tabs button.on{background:var(--aegean);color:#fff}
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin:16px 0}
+.kpi{background:#fff;border-radius:14px;padding:14px 16px;box-shadow:0 6px 18px rgba(11,34,64,.06)}
+.kpi b{display:block;font:600 32px 'Cormorant Garamond',serif;line-height:1.1}.kpi span{font-size:12px;color:var(--mute)}
+.kpi.good b{color:var(--olive)}.kpi.warn b{color:var(--amber)}.kpi.bad b{color:var(--terra)}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);cursor:pointer;white-space:nowrap;user-select:none}
+tbody tr:hover{background:var(--foam)}td.num,th.num{text-align:right}
+.barw{height:8px;width:110px;background:#ece8df;border-radius:6px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:8px}.barw i{display:block;height:100%}
+.room{display:grid;grid-template-columns:260px 1fr;gap:0;background:#fff;border-radius:16px;overflow:hidden;margin-bottom:16px;box-shadow:0 6px 20px rgba(11,34,64,.07)}
+.room .ph{background:var(--foam) center/cover;min-height:200px;position:relative}
+.room .thumbs{position:absolute;bottom:8px;left:8px;right:8px;display:flex;gap:4px}.room .thumbs i{flex:1;height:36px;border-radius:6px;background:#ddd center/cover;border:2px solid #fff;cursor:pointer}
+.room .b{padding:16px 18px;min-width:0}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.chip{font-size:11.5px;padding:3px 9px;border-radius:20px;background:var(--foam);color:var(--aegean);font-weight:600}
+.chip.o{background:#f3f1ec;color:#444}.chip.w{background:#fdf1e0;color:var(--amber)}.chip.r{background:#f8ebe5;color:var(--terra)}.chip.g{background:#eef3e6;color:var(--olive)}
+.flag{color:var(--amber);font-weight:700}
+.legend{font-size:12.5px;color:var(--mute);background:#fff;border:1px dashed var(--line);border-radius:12px;padding:12px 14px;margin:12px 0}
+.empty{text-align:center;padding:50px 20px;color:var(--mute)}
+.skel{height:120px;border-radius:14px;background:linear-gradient(90deg,#ebe8e1 0,#f6f4ef 50%,#ebe8e1 100%);background-size:200% 100%;animation:sh 1.2s infinite;margin-bottom:12px}@keyframes sh{to{background-position:-200% 0}}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.hint{font-size:12px;color:var(--mute);margin-top:6px}
+@media(max-width:980px){.intro{grid-template-columns:1fr}.ctrl{grid-template-columns:1fr 1fr}.ctrl .ac{grid-column:1/-1}.kpis{grid-template-columns:repeat(2,1fr)}.room{grid-template-columns:1fr}.tw{overflow:auto}}
+</style>
+</head>
+<body>
+<header><div class="w"><h1>ROOM MAPPING INSPECTOR</h1><span class="mute" style="color:#9fb2cc">Nuitee LiteAPI · roomMapping</span><a href="/">← Philoxenia</a> <a href="/lab" style="margin-left:0">API Lab</a></div></header>
+<div class="meander"></div>
+<div class="w">
+  <div class="intro">
+    <div class="card">
+      <div class="eyebrow">Mapping &amp; Content</div><h2>One physical room, many supplier names</h2>
+      <p class="mute" style="font-size:14px">Every supplier rate comes back with its own room name. With <code>roomMapping: true</code>, LiteAPI adds a <code>mappedRoomId</code> that points to one master room in the hotel's content. This page shows that resolution live: which supplier names were mapped to which master room, what stayed unmapped, and where the mapping might be wrong.</p>
+    </div>
+    <div class="card">
+      <h3>How to read it</h3>
+      <div class="mute">
+        <b>Rate coverage</b>: share of supplier rates carrying a <code>mappedRoomId</code>.<br>
+        <b>Name variants</b>: distinct supplier names resolved into the same master room.<br>
+        <b>Check flags</b>: a simple keyword heuristic of mine (bed type, room class, view), not Nuitee's logic. A flag means "worth a human look", not "wrong".
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ctrl">
+      <div class="ac"><label>Destination</label><input class="in" id="dest" placeholder="e.g. Santorini, Athens, Barcelona" autocomplete="off"><ul id="sug" class="hidden"></ul></div>
+      <div><label>Check-in</label><input class="in" type="date" id="ci"></div>
+      <div><label>Check-out</label><input class="in" type="date" id="co"></div>
+      <div><label>Adults</label><input class="in" type="number" id="ad" value="2" min="1" max="6"></div>
+      <button class="btn" id="scanBtn">Scan destination</button>
+    </div>
+    <div class="row" style="margin-top:12px"><span class="mute">Or inspect one hotel directly:</span><input class="in" id="hid" placeholder="Hotel ID (e.g. lp1a2b3)" style="width:220px;margin:0"><button class="btn ghost" id="hotelBtn">Inspect hotel</button></div>
+  </div>
+
+  <div class="tabs" style="margin-top:22px"><button class="on" data-t="scan">Destination scan</button><button data-t="hotel">Hotel inspector</button></div>
+
+  <section id="tScan">
+    <div id="scanKpis"></div>
+    <div class="card tw" id="scanOut"><div class="empty">Pick a destination and press <b>Scan destination</b> to see mapping coverage across its hotels.</div></div>
+  </section>
+
+  <section id="tHotel" class="hidden"><div id="hotelOut"><div class="card empty">Click a hotel in the scan, or enter a hotel ID above.</div></div></section>
+  <p class="mute" style="margin:30px 0">Data: live Nuitee LiteAPI responses (<code>/hotels/rates</code> with <code>roomMapping</code>, <code>/data/hotel</code> rooms). Opportunity scores and check flags are this page's own heuristics.</p>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const api=(u,b)=>fetch(u,b?{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(b)}:{}).then(async r=>{const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'Request failed');return j;});
+const day=n=>new Date(Date.now()+n*864e5).toISOString().slice(0,10);
+const pct=(a,b)=>b?Math.round(a/b*1000)/10:0;
+const money=(a,c='EUR')=>{try{return new Intl.NumberFormat('en',{style:'currency',currency:c,maximumFractionDigits:0}).format(a)}catch{return Math.round(a)+' '+c}};
+const col=p=>p>=90?'var(--olive)':p>=70?'var(--amber)':'var(--terra)';
+$('ci').value=day(30); $('co').value=day(32);
+let placeId=null, scan=[], sortK='opp', sortD=-1, lastHotel=null;
+
+/* tabs */
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>tab(b.dataset.t));
+function tab(t){document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));$('tScan').classList.toggle('hidden',t!=='scan');$('tHotel').classList.toggle('hidden',t!=='hotel');}
+
+/* autocomplete */
+let tm; $('dest').oninput=e=>{placeId=null;clearTimeout(tm);const q=e.target.value.trim();if(q.length<2)return $('sug').classList.add('hidden');
+  tm=setTimeout(async()=>{const l=await api('/api/places?q='+encodeURIComponent(q)).catch(()=>[]);
+  $('sug').innerHTML=l.slice(0,7).map(p=>`<li data-id="${esc(p.placeId)}" data-n="${esc(p.displayName)}"><b>${esc(p.displayName)}</b> <span class="mute">${esc(p.formattedAddress||'')}</span></li>`).join('');$('sug').classList.toggle('hidden',!l.length);},220);};
+$('sug').onmousedown=e=>{const li=e.target.closest('li');if(!li)return;e.preventDefault();placeId=li.dataset.id;$('dest').value=li.dataset.n;$('sug').classList.add('hidden');};
+$('dest').onblur=()=>setTimeout(()=>$('sug').classList.add('hidden'),150);
+const q=()=>({checkin:$('ci').value,checkout:$('co').value,adults:$('ad').value});
+
+/* ===== destination scan ===== */
+$('scanBtn').onclick=async()=>{
+  if(!placeId) return alert('Pick a destination from the list first.');
+  tab('scan'); $('scanBtn').disabled=true; $('scanKpis').innerHTML=''; $('scanOut').innerHTML='<div class="skel"></div><div class="skel"></div>';
+  try{ scan=await api('/api/mapping/scan',{placeId,...q()}); drawScan(); }
+  catch(e){ $('scanOut').innerHTML=`<div class="empty">${esc(e.message)}</div>`; }
+  $('scanBtn').disabled=false;
+};
+function drawScan(){
+  if(!scan.length){ $('scanOut').innerHTML='<div class="empty">No hotels with availability for these dates.</div>'; return; }
+  const R=scan.reduce((s,h)=>s+h.rates,0), M=scan.reduce((s,h)=>s+h.mapped,0), N=scan.reduce((s,h)=>s+h.names,0), MR=scan.reduce((s,h)=>s+h.masterRooms,0);
+  const full=scan.filter(h=>h.rates&&h.mapped===h.rates).length, zero=scan.filter(h=>h.rates&&!h.mapped).length, cov=pct(M,R);
+  $('scanKpis').innerHTML=`<div class="kpis">
+    <div class="kpi"><b>${scan.length}</b><span>Hotels with rates</span></div>
+    <div class="kpi"><b>${R.toLocaleString()}</b><span>Supplier rates returned</span></div>
+    <div class="kpi ${cov>=90?'good':cov>=70?'warn':'bad'}"><b>${cov}%</b><span>Rate coverage (mapped)</span></div>
+    <div class="kpi"><b>${MR?(N/MR).toFixed(1):'–'}</b><span>Supplier names per master room</span></div>
+    <div class="kpi good"><b>${full}</b><span>Hotels fully mapped</span></div>
+    <div class="kpi ${zero?'bad':''}"><b>${zero}</b><span>Hotels with no mapping</span></div></div>`;
+  // opportunity = unmapped rates × median price (a rough proxy for bookable value left unmapped)
+  scan.forEach(h=>{h.cov=pct(h.mapped,h.rates); h.opp=(h.rates-h.mapped)*(h.medianPrice||0);});
+  const list=[...scan].sort((a,b)=>((a[sortK]>b[sortK])-(a[sortK]<b[sortK]))*sortD);
+  const th=(k,t,c='')=>`<th class="${c}" data-k="${k}">${t}${sortK===k?(sortD<0?' ↓':' ↑'):''}</th>`;
+  $('scanOut').innerHTML=`<div class="row" style="justify-content:space-between"><h3>Coverage by hotel</h3><button class="btn ghost" id="csvScan">Export CSV</button></div>
+    <div class="legend"><b>Opportunity</b> = unmapped rates × the hotel's median rate price. It's a rough proxy for where better mapping would unlock the most bookable value, so sort by it to decide which hotels to look at first.</div>
+    <div class="tw"><table><thead><tr>${th('name','Hotel')}${th('cov','Rate coverage')}${th('rates','Rates','num')}${th('names','Supplier names','num')}${th('masterRooms','Master rooms hit','num')}${th('unmappedNames','Unmapped names','num')}${th('opp','Opportunity','num')}<th></th></tr></thead>
+    <tbody>${list.map(h=>`<tr><td><b>${esc(h.name)}</b><div class="mute">${esc(h.hotelId)}${h.stars?' · '+'★'.repeat(Math.round(h.stars)):''}</div></td>
+      <td><span class="barw"><i style="width:${h.cov}%;background:${col(h.cov)}"></i></span>${h.cov}%</td>
+      <td class="num">${h.rates}</td><td class="num">${h.names}</td><td class="num">${h.masterRooms}</td><td class="num">${h.unmappedNames||'–'}</td>
+      <td class="num">${h.opp?money(h.opp,h.currency):'–'}</td><td><button class="btn ghost" style="padding:6px 10px" data-h="${esc(h.hotelId)}">Inspect</button></td></tr>`).join('')}</tbody></table></div>`;
+  $('scanOut').querySelectorAll('th[data-k]').forEach(t=>t.onclick=()=>{ if(sortK===t.dataset.k) sortD*=-1; else {sortK=t.dataset.k; sortD=t.dataset.k==='name'?1:-1;} drawScan(); });
+  $('scanOut').querySelectorAll('[data-h]').forEach(b=>b.onclick=()=>inspect(b.dataset.h));
+  $('csvScan').onclick=()=>csv('mapping-scan.csv',[['hotelId','name','rates','mapped','coverage_pct','supplier_names','master_rooms','unmapped_names','median_price','currency','opportunity'],
+    ...scan.map(h=>[h.hotelId,h.name,h.rates,h.mapped,h.cov,h.names,h.masterRooms,h.unmappedNames,h.medianPrice,h.currency,Math.round(h.opp)])]);
+}
+
+/* ===== hotel inspector ===== */
+$('hotelBtn').onclick=()=>{ const id=$('hid').value.trim(); if(!id) return alert('Enter a hotel ID.'); inspect(id); };
+const GROUPS={
+  bed:['king','queen','double','twin','single','triple','quadruple','bunk','sofa bed'],
+  class:['suite','junior suite','studio','apartment','villa','cave','family','dormitory','penthouse','bungalow','maisonette'],
+  view:['sea view','ocean view','caldera view','garden view','pool view','city view','mountain view','no view'],
+};
+const norm=s=>String(s||'').toLowerCase().replace(/[^a-z0-9 ]+/g,' ').replace(/\s+/g,' ').trim();
+function tokens(s){ const n=' '+norm(s)+' '; const out={}; for(const [g,list] of Object.entries(GROUPS)){ const hits=list.filter(t=>n.includes(' '+t+' ')); if(hits.length) out[g]=hits.filter(h=>!hits.some(o=>o!==h&&o.includes(h))); } return out; }
+function flagsFor(supplier, master){
+  const a=tokens(supplier), b=tokens(master), f=[];
+  for(const g of Object.keys(GROUPS)) if(a[g]&&b[g]&&!a[g].some(t=>b[g].includes(t))) f.push(`${g}: "${a[g].join('/')}" vs master "${b[g].join('/')}"`);
+  return f;
+}
+async function inspect(id){
+  tab('hotel'); $('hid').value=id; $('hotelOut').innerHTML='<div class="skel"></div><div class="skel"></div><div class="skel"></div>';
+  try{ lastHotel=await api('/api/mapping/hotel',{hotelId:id,...q()}); drawHotel(); }
+  catch(e){ $('hotelOut').innerHTML=`<div class="card empty">${esc(e.message)}</div>`; }
+}
+function drawHotel(){
+  const {hotel,contentRooms:CR,rates:RT}=lastHotel;
+  const byId=Object.fromEntries(CR.map(r=>[r.id,r]));
+  const mapped=RT.filter(r=>r.mappedRoomId), unm=RT.filter(r=>!r.mappedRoomId);
+  const groups={}; mapped.forEach(r=>(groups[r.mappedRoomId]??=[]).push(r));
+  const orphanIds=Object.keys(groups).filter(id=>!byId[id]);  // mapped to an id that isn't in content
+  const unused=CR.filter(r=>!groups[r.id]);
+  const names=new Set(RT.map(r=>norm(r.supplierName))).size;
+  let flagged=0;
+  const roomCards=Object.entries(groups).sort((a,b)=>b[1].length-a[1].length).map(([id,rs])=>{
+    const m=byId[id]; const masterName=m?.name||`Unknown master room ${id}`;
+    const variants={}; rs.forEach(r=>{const k=r.supplierName.trim(); (variants[k]??={name:k,n:0,boards:new Set(),min:1e12,max:0,cur:r.currency,ref:0}); const v=variants[k]; v.n++; v.boards.add(r.board||'—'); v.min=Math.min(v.min,r.price); v.max=Math.max(v.max,r.price); if(r.refundable) v.ref++;});
+    const vs=Object.values(variants).sort((a,b)=>b.n-a.n);
+    const rows=vs.map(v=>{const f=flagsFor(v.name,masterName); if(f.length) flagged+=v.n; return `<tr><td>${esc(v.name)}${f.length?`<div class="flag">⚑ ${esc(f.join(' · '))}</div>`:''}</td><td class="num">${v.n}</td><td>${[...v.boards].map(b=>`<span class="chip o">${esc(b)}</span>`).join(' ')}</td><td class="num">${v.min===v.max?money(v.min,v.cur):money(v.min,v.cur)+'–'+money(v.max,v.cur)}</td></tr>`;}).join('');
+    const ph=m?.photos||[];
+    return `<div class="room"><div class="ph" style="background-image:url('${esc(ph[0]||'')}')">${ph.length>1?`<div class="thumbs">${ph.slice(1,5).map(p=>`<i style="background-image:url('${esc(p)}')"></i>`).join('')}</div>`:''}</div>
+      <div class="b"><div class="row" style="justify-content:space-between"><div><div class="eyebrow">Master room · ${esc(id)}</div><h3 style="font-size:20px;font-family:'Cormorant Garamond',serif">${esc(masterName)}</h3></div>
+        <div class="chips"><span class="chip">${rs.length} rates</span><span class="chip">${vs.length} name variant${vs.length>1?'s':''}</span>${m?'':'<span class="chip r">Not in hotel content</span>'}</div></div>
+        ${m?`<div class="chips">${m.beds.map(b=>`<span class="chip o">🛏 ${esc(b)}</span>`).join('')}${m.maxOccupancy?`<span class="chip o">👤 max ${esc(m.maxOccupancy)}</span>`:''}${m.size?`<span class="chip o">${esc(m.size)}</span>`:''}</div>`:''}
+        <div class="tw"><table><thead><tr><th>Supplier room name</th><th class="num">Rates</th><th>Boards</th><th class="num">Price</th></tr></thead><tbody>${rows}</tbody></table></div></div></div>`;
+  }).join('');
+  const uv={}; unm.forEach(r=>{const k=r.supplierName.trim();(uv[k]??={n:0,min:1e12,cur:r.currency});uv[k].n++;uv[k].min=Math.min(uv[k].min,r.price);});
+  const cov=pct(mapped.length,RT.length), master=Object.keys(groups).length;
+  $('hotelOut').innerHTML=`
+    <div class="card row" style="justify-content:space-between"><div><div class="eyebrow">Hotel</div><h2>${esc(hotel.name)}</h2><div class="mute">${esc(hotel.id)} · ${esc(hotel.address)} · ${esc($('ci').value)} → ${esc($('co').value)}</div></div>
+      <button class="btn ghost" id="csvHotel">Export mapping CSV</button></div>
+    <div class="kpis">
+      <div class="kpi"><b>${RT.length}</b><span>Supplier rates</span></div>
+      <div class="kpi ${cov>=90?'good':cov>=70?'warn':'bad'}"><b>${cov}%</b><span>Rate coverage</span></div>
+      <div class="kpi"><b>${names}</b><span>Distinct supplier names</span></div>
+      <div class="kpi"><b>${master} / ${CR.length}</b><span>Master rooms hit / in content</span></div>
+      <div class="kpi"><b>${master?(Object.values(groups).reduce((s,g)=>s+new Set(g.map(r=>norm(r.supplierName))).size,0)/master).toFixed(1):'–'}</b><span>Name variants per master room</span></div>
+      <div class="kpi ${flagged?'warn':'good'}"><b>${flagged}</b><span>Rates with a check flag</span></div>
+    </div>
+    ${!RT.length?'<div class="card empty">No rates for these dates. Try other dates.</div>':''}
+    ${roomCards}
+    ${unm.length?`<div class="card" style="margin-bottom:16px"><h3 style="color:var(--terra)">Unmapped supplier names (${unm.length} rates)</h3><p class="mute">These rates came back without a <code>mappedRoomId</code>, so a guest sees the raw supplier name and no room photos.</p>
+      <table><thead><tr><th>Supplier room name</th><th class="num">Rates</th><th class="num">From</th></tr></thead><tbody>${Object.entries(uv).sort((a,b)=>b[1].n-a[1].n).map(([k,v])=>`<tr><td>${esc(k)}</td><td class="num">${v.n}</td><td class="num">${money(v.min,v.cur)}</td></tr>`).join('')}</tbody></table></div>`:''}
+    ${unused.length?`<div class="card" style="margin-bottom:16px"><h3>Master rooms with no live rate on these dates (${unused.length})</h3><p class="mute">In the hotel's content but no supplier rate resolved to them. Could be sold out, or a coverage gap.</p><div class="chips">${unused.map(r=>`<span class="chip o">${esc(r.name)} · ${esc(r.id)}</span>`).join('')}</div></div>`:''}
+    ${orphanIds.length?`<div class="card" style="margin-bottom:16px"><h3 style="color:var(--terra)">Mapped to IDs missing from content (${orphanIds.length})</h3><div class="chips">${orphanIds.map(i=>`<span class="chip r">${esc(i)}</span>`).join('')}</div></div>`:''}
+    <div class="legend">⚑ <b>Check flags</b> compare keywords in the supplier name with the master room name (bed type, room class, view). Example: supplier says "Twin" and the master room says "Double". This is a simple heuristic to surface candidates for review. It is not how Nuitee maps rooms, and a flag isn't proof of an error.</div>`;
+  $('csvHotel').onclick=()=>csv(`mapping-${hotel.id}.csv`,[['hotelId','supplier_room_name','mapped_room_id','master_room_name','board','refundable','price','currency','check_flag'],
+    ...RT.map(r=>{const m=byId[r.mappedRoomId]; return [hotel.id,r.supplierName,r.mappedRoomId||'',m?.name||'',r.board,r.refundable,r.price,r.currency,r.mappedRoomId?flagsFor(r.supplierName,m?.name||'').join(' | '):'UNMAPPED'];})]);
+}
+function csv(name,rows){
+  const s=rows.map(r=>r.map(v=>{v=String(v??'');return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}).join(',')).join('\n');
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['﻿'+s],{type:'text/csv'})); a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+</script>
+</body>
+</html>
