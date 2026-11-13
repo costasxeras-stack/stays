@@ -1,0 +1,885 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KostasTravel — Greek Hospitality, Anywhere</title>
+<meta name="description" content="Hand-picked hotels with live rates, AI vibe search and instant confirmation.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://payment-wrapper.liteapi.travel/dist/liteAPIPayment.js?v=a1"></script>
+<style>
+/* ================= BRAND — edit here ================= */
+:root{
+  --aegean:#1d4f91; --deep:#0b2240; --sea:#2f7fc1; --foam:#e9f1fa;
+  --marble:#f8f6f1; --white:#fff; --ink:#15202e; --mute:#667085; --line:#e4e0d6;
+  --gold:#b8975a; --terra:#c4583c; --olive:#5f7a3a;
+  --serif:'Cormorant Garamond',Georgia,serif; --sans:'Manrope',system-ui,sans-serif;
+  --hero:url('https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=2200&q=80');
+  --r:16px; --shadow:0 1px 2px rgba(11,34,64,.05),0 12px 32px rgba(11,34,64,.08);
+  --meander:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='24' fill='none' stroke='%23b8975a' stroke-width='2'%3E%3Cpath d='M0 22H28M4 22V2h18v16H10V8h6v5'/%3E%3C/svg%3E");
+}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;font:15px/1.6 var(--sans);color:var(--ink);background:var(--marble);-webkit-font-smoothing:antialiased}
+a{color:inherit}button{font:inherit;cursor:pointer}.hidden{display:none!important}
+.wrap{max-width:1200px;margin:auto;padding:0 20px}.mute{color:var(--mute);font-size:13px}
+h1,h2,h3{font-family:var(--serif);font-weight:600;letter-spacing:.005em}
+.meander{height:24px;background:var(--meander) repeat-x center;opacity:.9}
+.eyebrow{font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);font-weight:600}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:12px;padding:14px 26px;
+  font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;background:var(--aegean);color:#fff;transition:.2s;text-decoration:none}
+.btn:hover{background:var(--deep)}.btn:disabled{opacity:.55;cursor:wait}
+.btn.ghost{background:transparent;color:var(--aegean);border:1.5px solid var(--aegean)}.btn.ghost:hover{background:var(--aegean);color:#fff}
+.btn.gold{background:var(--gold)}.btn.gold:hover{background:#9c7c45}.btn.danger{background:var(--terra)}
+.in,select.in,textarea.in{width:100%;font:15px var(--sans);padding:13px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink)}
+.in:focus{outline:0;border-color:var(--sea);box-shadow:0 0 0 3px rgba(47,127,193,.15)}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:5px 10px;border-radius:20px;background:var(--foam);color:var(--aegean);font-weight:600}
+.chip.g{background:#eef3e6;color:var(--olive)}.chip.t{background:#f8ebe5;color:var(--terra)}.chip.o{background:#fff;border:1px solid var(--line);color:var(--ink);font-weight:500}
+
+/* ---------- NAV ---------- */
+.nav{position:absolute;inset:0 0 auto;z-index:30;color:#fff}
+.nav .wrap{display:flex;align-items:center;gap:26px;height:80px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;font:600 26px var(--serif);letter-spacing:.12em}
+.logo svg{width:30px;height:30px}
+.nav nav{display:flex;gap:22px;margin-left:auto;font-size:14px;font-weight:500}
+.nav nav a{text-decoration:none;opacity:.9}.nav nav a:hover{opacity:1;text-decoration:underline;text-underline-offset:6px}
+.prefs{display:flex;gap:8px}.prefs select{background:rgba(255,255,255,.12);color:inherit;border:1px solid rgba(255,255,255,.3);border-radius:10px;padding:7px 8px;font:600 12px var(--sans);max-width:130px}
+.prefs select option{color:var(--ink)}
+.solid .nav{position:sticky;top:0;background:var(--deep);box-shadow:0 2px 16px rgba(0,0,0,.15)}
+
+/* ---------- HERO ---------- */
+.hero{position:relative;min-height:92vh;display:flex;align-items:flex-end;color:#fff;padding:140px 0 70px;
+  background:linear-gradient(180deg,rgba(6,22,44,.55) 0%,rgba(6,22,44,.15) 35%,rgba(6,22,44,.8) 100%),var(--hero) center/cover,linear-gradient(135deg,#1d4f91,#0b2240)}
+.hero h1{font-size:clamp(44px,7vw,92px);line-height:.98;margin:14px 0 16px;max-width:880px;font-weight:600}
+.hero h1 em{font-style:italic;color:#f1dfb6;font-weight:500}
+.hero p.lead{font-size:18px;max-width:560px;opacity:.92;margin:0 0 34px}
+.solid .hero{display:none}
+
+/* ---------- SEARCH CARD ---------- */
+.sc{background:#fff;color:var(--ink);border-radius:20px;box-shadow:0 30px 70px rgba(0,0,0,.3);padding:8px;position:relative}
+.tabs{display:flex;gap:4px;padding:6px 6px 0}
+.tab{border:0;background:transparent;padding:10px 16px;border-radius:10px;font-weight:700;font-size:13px;color:var(--mute)}
+.tab.on{background:var(--foam);color:var(--aegean)}
+.grid5{display:grid;grid-template-columns:2.1fr 1fr 1fr 1.25fr auto;align-items:stretch}
+.f{padding:12px 18px;border-right:1px solid var(--line);position:relative;min-width:0}
+.f:last-of-type{border:0}
+.f label{display:block;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.f input,.f textarea,.f .val{border:0;outline:0;font:600 15px var(--sans);width:100%;padding:5px 0 0;background:transparent;color:var(--ink);resize:none}
+.f .val{cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sc .btn{margin:8px;border-radius:14px;padding:0 30px}
+.pop{position:absolute;top:calc(100% + 10px);z-index:40;background:#fff;border-radius:16px;box-shadow:0 20px 50px rgba(11,34,64,.25);padding:10px;color:var(--ink)}
+#sug{left:0;width:min(460px,92vw);list-style:none;margin:0;max-height:330px;overflow:auto}
+#sug li{padding:10px 12px;border-radius:10px;cursor:pointer;display:flex;gap:10px;align-items:center}
+#sug li:hover,#sug li.act{background:var(--foam)}
+#sug .pin{width:30px;height:30px;border-radius:50%;background:var(--foam);display:grid;place-items:center;flex:none;color:var(--aegean)}
+#guestPop{right:0;width:330px;padding:16px}
+.gRoom{border-bottom:1px solid var(--line);padding:10px 0}.gRoom:last-of-type{border:0}
+.gRow{display:flex;justify-content:space-between;align-items:center;margin:6px 0}
+.step{display:flex;align-items:center;gap:10px}.step button{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:16px}
+.ages{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.ages select{padding:6px;border-radius:8px;border:1px solid var(--line);font:13px var(--sans)}
+.link{background:none;border:0;color:var(--aegean);font-weight:700;padding:6px 0;text-decoration:underline;text-underline-offset:4px}
+.aiHint{display:flex;gap:6px;flex-wrap:wrap;padding:4px 18px 12px}
+.aiHint button{border:1px dashed var(--line);background:#fff;border-radius:20px;padding:6px 12px;font-size:12px;color:var(--mute)}
+.aiHint button:hover{border-color:var(--sea);color:var(--aegean)}
+.solid .searchTop{background:var(--deep);padding:4px 0 26px}.searchTop .sc{box-shadow:0 10px 30px rgba(0,0,0,.2)}
+
+/* ---------- HOME SECTIONS ---------- */
+section.block{padding:84px 0}
+.secHead{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:30px;flex-wrap:wrap}
+.secHead h2{font-size:clamp(34px,4vw,50px);margin:6px 0 0;line-height:1.05}
+.dests{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:240px;gap:18px}
+.dest{position:relative;border-radius:var(--r);overflow:hidden;cursor:pointer;color:#fff;border:0;text-align:left;padding:0;
+  background:linear-gradient(160deg,var(--sea),var(--deep))}
+.dest:nth-child(1){grid-row:span 2}
+.dest .ph{position:absolute;inset:0;background:center/cover;transition:transform .6s}
+.dest:hover .ph{transform:scale(1.06)}
+.dest .cap{position:absolute;inset:auto 0 0;padding:20px;background:linear-gradient(transparent,rgba(6,22,44,.85))}
+.dest .gk{position:absolute;top:14px;right:16px;font:600 40px var(--serif);opacity:.35}
+.dest h3{margin:0;font-size:30px;line-height:1}.dest small{opacity:.85;font-size:13px}
+.why{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.wcard{background:#fff;border-radius:var(--r);padding:26px;box-shadow:var(--shadow)}
+.wcard .ic{width:46px;height:46px;border-radius:12px;background:var(--foam);display:grid;place-items:center;font-size:22px;margin-bottom:14px}
+.wcard h3{font-size:24px;margin:0 0 6px}
+.band{background:var(--deep);color:#fff;border-radius:24px;padding:46px;display:grid;grid-template-columns:1.2fr 1fr;gap:30px;align-items:center;position:relative;overflow:hidden}
+.band h2{font-size:42px;margin:8px 0 10px;line-height:1.05}.band p{opacity:.85}
+.band .quote{font:italic 500 26px/1.35 var(--serif);border-left:2px solid var(--gold);padding-left:22px;color:#f1dfb6}
+
+/* ---------- RESULTS ---------- */
+.resLayout{display:grid;grid-template-columns:270px 1fr;gap:28px;margin:30px auto 70px}
+.side{position:sticky;top:100px;align-self:start;background:#fff;border-radius:var(--r);padding:22px;box-shadow:var(--shadow)}
+.side h4{margin:18px 0 8px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.side h4:first-child{margin-top:0}
+.side label{display:flex;align-items:center;gap:8px;font-size:14px;padding:4px 0;cursor:pointer}
+.side input[type=range]{width:100%;accent-color:var(--aegean)}
+.side input[type=checkbox]{accent-color:var(--aegean);width:16px;height:16px}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.bar h2{font-size:38px;margin:0;line-height:1.1}
+.aiBanner{background:linear-gradient(135deg,var(--foam),#fff);border:1px solid #d6e4f3;border-radius:var(--r);padding:16px 20px;margin-bottom:18px;font-size:14px}
+.card{display:grid;grid-template-columns:320px 1fr;background:#fff;border-radius:var(--r);overflow:hidden;margin-bottom:20px;box-shadow:var(--shadow);transition:.25s}
+.card:hover{transform:translateY(-2px);box-shadow:0 20px 46px rgba(11,34,64,.14)}
+.card .img{background:var(--foam) center/cover;min-height:270px;position:relative;cursor:pointer}
+.badge{position:absolute;top:14px;left:14px;background:rgba(255,255,255,.95);font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:6px 10px;border-radius:20px;color:var(--deep)}
+.badge.ai{background:var(--aegean);color:#fff}
+.card .body{padding:22px 26px;display:flex;flex-direction:column}
+.top{display:flex;justify-content:space-between;gap:12px}
+.stars{color:var(--gold);letter-spacing:2px;font-size:13px}
+.card h3{font-size:28px;margin:2px 0;line-height:1.1;cursor:pointer}
+.score{display:flex;align-items:center;gap:8px;text-align:right;flex:none}
+.score b{background:var(--aegean);color:#fff;border-radius:10px 10px 10px 2px;padding:6px 9px;font-size:15px}
+.score span{font-size:12px;line-height:1.3;color:var(--mute)}.score span strong{display:block;color:var(--ink);font-size:13px}
+.story{font:italic 500 17px/1.4 var(--serif);color:var(--deep);margin:10px 0 0;border-left:2px solid var(--gold);padding-left:12px}
+.offers{margin-top:12px}
+.offer{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 0;border-top:1px dashed var(--line)}
+.offer .rn{font-weight:600;font-size:14px}
+.offer .meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.pr{text-align:right;white-space:nowrap}.pr b{font:700 22px var(--serif);display:block;line-height:1}.pr small{font-size:11px;color:var(--mute)}
+.sel{font:700 11px var(--sans);letter-spacing:.1em;text-transform:uppercase;border:1.5px solid var(--aegean);color:var(--aegean);background:#fff;padding:9px 14px;border-radius:10px;margin-left:12px}
+.sel:hover{background:var(--aegean);color:#fff}
+.more{margin-top:auto;padding-top:12px;display:flex;justify-content:space-between;align-items:center}
+.skel{height:270px;border-radius:var(--r);margin-bottom:20px;background:linear-gradient(90deg,#ebe8e1 0,#f6f4ef 50%,#ebe8e1 100%);background-size:200% 100%;animation:sh 1.2s infinite}
+@keyframes sh{to{background-position:-200% 0}}
+.empty{text-align:center;padding:70px 20px;background:#fff;border-radius:var(--r)}
+.empty h3{font-size:30px;margin:0 0 6px}
+
+/* ---------- HOTEL MODAL ---------- */
+.modal{position:fixed;inset:0;z-index:60;background:rgba(6,22,44,.6);backdrop-filter:blur(4px);display:flex;justify-content:center;align-items:flex-start;overflow:auto;padding:30px 14px}
+.mbox{background:var(--marble);border-radius:22px;width:min(1080px,100%);overflow:hidden;position:relative;animation:up .25s ease}
+@keyframes up{from{transform:translateY(20px);opacity:0}}
+.x{position:absolute;top:14px;right:14px;z-index:2;width:42px;height:42px;border-radius:50%;border:0;background:#fff;font-size:22px;box-shadow:var(--shadow)}
+.gal{display:grid;grid-template-columns:2fr 1fr 1fr;grid-template-rows:180px 180px;gap:6px;background:#fff}
+.gal div{background:var(--foam) center/cover;cursor:zoom-in}.galw{position:relative}.galAll{position:absolute;right:14px;bottom:14px;background:#fff;border:0;border-radius:10px;padding:9px 14px;font-weight:700;font-size:13px;box-shadow:0 4px 14px rgba(0,0,0,.2);cursor:pointer}
+.rph{width:72px;height:54px;border-radius:8px;flex:none;border:0;padding:0;background:var(--foam) center/cover;cursor:zoom-in;position:relative}.rph span{position:absolute;right:3px;bottom:3px;background:rgba(0,0,0,.65);color:#fff;font-size:10px;padding:1px 5px;border-radius:6px}.gal div:first-child{grid-row:span 2}
+.mcontent{padding:28px 32px 36px;display:grid;grid-template-columns:1.5fr 1fr;gap:30px}
+.mcontent h2{font-size:42px;margin:4px 0;line-height:1.05}
+.desc{max-height:150px;overflow:hidden;position:relative}.desc.open{max-height:none}
+.desc:not(.open):after{content:'';position:absolute;inset:auto 0 0;height:50px;background:linear-gradient(transparent,var(--marble))}
+.facs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.mtabs{display:flex;gap:6px;margin:26px 0 14px;border-bottom:1px solid var(--line)}
+.mtabs button{border:0;background:none;padding:12px 4px;margin-right:16px;font-weight:700;color:var(--mute);border-bottom:2px solid transparent}
+.mtabs button.on{color:var(--aegean);border-color:var(--aegean)}
+.cat{margin:8px 0}.cat .lbl{display:flex;justify-content:space-between;font-size:13px;font-weight:600}
+.meter{height:6px;background:#e7e3da;border-radius:6px;overflow:hidden;margin-top:4px}.meter i{display:block;height:100%;background:var(--aegean)}
+.rv{background:#fff;border-radius:14px;padding:16px;margin-bottom:10px;box-shadow:var(--shadow)}
+.rv .h{display:flex;justify-content:space-between;gap:10px}
+.facts{background:#fff;border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
+.facts .row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.facts .row:last-child{border:0}
+.mapbox{border-radius:var(--r);overflow:hidden;margin-top:14px;height:200px;background:var(--foam)}
+.mapbox iframe{width:100%;height:100%;border:0}
+
+/* ---------- CHECKOUT ---------- */
+.steps{display:flex;gap:10px;align-items:center;margin:34px 0 22px;font-size:13px;font-weight:700;color:var(--mute);flex-wrap:wrap}
+.steps span{display:flex;align-items:center;gap:8px}.steps i{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;border:1.5px solid var(--line);font-style:normal}
+.steps .on{color:var(--aegean)}.steps .on i{background:var(--aegean);border-color:var(--aegean);color:#fff}
+.steps .ln{flex:0 0 40px;height:1px;background:var(--line)}
+.ck{display:grid;grid-template-columns:1.35fr 1fr;gap:28px;margin-bottom:70px;align-items:start}
+.panel{background:#fff;border-radius:20px;padding:30px;box-shadow:var(--shadow)}
+.panel h2{font-size:32px;margin:0 0 4px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mt{margin-top:10px}
+.sum{position:sticky;top:100px}.sum .ph{height:180px;border-radius:14px;background:var(--foam) center/cover;margin-bottom:16px}
+.ln2{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.tot{font:700 30px var(--serif);border:0;padding-top:16px}
+.note{border-radius:12px;padding:12px 14px;font-size:13px;margin-top:14px;background:#fbf6ea;border:1px solid #efe1bf}
+.note.ok{background:#eef5e8;border-color:#d4e4c2}.note.warn{background:#fbece6;border-color:#f0cfc2}
+.timeline{margin-top:12px;border-left:2px solid var(--line);padding-left:16px}
+.timeline div{position:relative;padding:4px 0 10px;font-size:13px}.timeline div:before{content:'';position:absolute;left:-22px;top:9px;width:10px;height:10px;border-radius:50%;background:var(--olive)}
+.timeline div.p:before{background:var(--terra)}
+.done{max-width:680px;margin:50px auto 80px;text-align:center}
+.done .seal{width:84px;height:84px;margin:0 auto 14px;border-radius:50%;background:var(--aegean);display:grid;place-items:center;color:#fff;font-size:38px;box-shadow:0 0 0 8px var(--foam)}
+
+/* ---------- FOOTER / TOAST ---------- */
+footer{background:var(--deep);color:#c7cfdb;padding:0 0 30px;margin-top:40px;font-size:14px}
+footer .cols{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:30px;padding:44px 0 30px}
+footer h5{color:#fff;font:600 13px var(--sans);letter-spacing:.14em;text-transform:uppercase;margin:0 0 12px}
+footer a{display:block;text-decoration:none;opacity:.8;padding:3px 0;cursor:pointer}footer a:hover{opacity:1}
+footer .bottom{border-top:1px solid rgba(255,255,255,.1);padding-top:20px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:12px;opacity:.7}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:90;background:var(--deep);color:#fff;padding:12px 18px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.3);font-size:14px;max-width:90vw}
+
+
+.rdl{font-size:12px;padding:2px 0;margin-top:2px}
+.rov{position:fixed;inset:0;z-index:120;background:rgba(6,22,44,.55);display:flex;justify-content:center;align-items:flex-start;overflow:auto;padding:30px 12px}
+.rbox{background:#fff;border-radius:20px;width:min(640px,100%);overflow:hidden;position:relative;animation:up .2s ease}
+.rbox .rgal{display:grid;grid-template-columns:2fr 1fr;grid-template-rows:130px 130px;gap:4px}
+.rbox .rgal div{background:var(--foam) center/cover;cursor:zoom-in}.rbox .rgal div:first-child{grid-row:span 2}
+.rbox .rc{padding:22px 24px 26px}.rbox h3{font-size:28px;margin:0 0 4px}
+.rbox .kv{display:grid;grid-template-columns:110px 1fr;gap:6px 10px;font-size:14px;margin:14px 0}
+.rbox .kv b{color:var(--mute);font-weight:600}
+.rbox .amen{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+/* ---------- MOBILE ---------- */
+@media(max-width:960px){
+  .grid5{grid-template-columns:1fr 1fr}.f{border-right:0;border-bottom:1px solid var(--line)}.f.wide{grid-column:1/-1}
+  .sc .btn{grid-column:1/-1;padding:16px}.nav nav{display:none}.prefs select{max-width:92px}
+  .dests{grid-template-columns:1fr 1fr;grid-auto-rows:190px}.dest:nth-child(1){grid-row:span 1}
+  .why{grid-template-columns:1fr 1fr}.band{grid-template-columns:1fr;padding:30px}
+  .resLayout{grid-template-columns:1fr}.side{position:static}
+  .card{grid-template-columns:1fr}.card .img{min-height:220px}.card .body{padding:18px}
+  .mcontent{grid-template-columns:1fr;padding:22px}.gal{grid-template-columns:1fr 1fr;grid-template-rows:200px 110px}.gal div:first-child{grid-column:span 2;grid-row:span 1}.gal div:nth-child(n+4){display:none}
+  .ck{grid-template-columns:1fr}.sum{position:static}footer .cols{grid-template-columns:1fr 1fr}
+  .hero{min-height:auto}
+  #guestPop{left:0;right:auto;width:calc(100vw - 60px);max-width:360px}
+}
+@media(max-width:520px){.why{grid-template-columns:1fr}.offer{flex-wrap:wrap}.two{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<!-- ===== Photo viewer (click any photo) ===== -->
+<style>
+.lb{position:fixed;inset:0;z-index:200;background:rgba(5,12,24,.94);display:flex;flex-direction:column;color:#fff;font-family:system-ui,sans-serif}
+.lb-top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px}
+.lb-top b{font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb-top span{opacity:.75;font-size:13px;white-space:nowrap}
+.lb-x,.lb-nav{border:0;background:rgba(255,255,255,.12);color:#fff;border-radius:50%;cursor:pointer;display:grid;place-items:center}
+.lb-x{width:40px;height:40px;font-size:24px;flex:none}.lb-x:hover,.lb-nav:hover{background:rgba(255,255,255,.25)}
+.lb-stage{flex:1;position:relative;display:flex;align-items:center;justify-content:center;min-height:0;padding:0 64px}
+.lb-stage img{max-width:100%;max-height:100%;object-fit:contain;border-radius:6px;user-select:none}
+.lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:48px;height:48px;font-size:26px}
+.lb-prev{left:10px}.lb-next{right:10px}
+.lb-thumbs{display:flex;gap:6px;overflow-x:auto;padding:10px 16px 16px;justify-content:safe center}
+.lb-thumbs img{height:58px;width:84px;object-fit:cover;border-radius:6px;opacity:.5;cursor:pointer;border:2px solid transparent;flex:none}
+.lb-thumbs img.on{opacity:1;border-color:#e6cf9f}
+.lb-err{opacity:.7;font-size:14px}
+@media(max-width:640px){.lb-stage{padding:0 8px}.lb-nav{width:40px;height:40px;background:rgba(0,0,0,.45)}.lb-thumbs img{height:46px;width:66px}}
+</style>
+<script>
+(function(){
+  let box=null, list=[], i=0, title='', pushed=false, x0=null;
+  const e=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function draw(){
+    if(!box) return;
+    box.querySelector('.lb-top span').textContent = `${i+1} / ${list.length}`;
+    const img = box.querySelector('.lb-stage img');
+    img.style.display=''; box.querySelector('.lb-err').style.display='none';
+    img.src = list[i];
+    box.querySelectorAll('.lb-thumbs img').forEach((t,k)=>t.classList.toggle('on',k===i));
+    box.querySelector('.lb-thumbs img.on')?.scrollIntoView({block:'nearest',inline:'center'});
+    box.querySelectorAll('.lb-nav').forEach(b=>b.style.display=list.length>1?'':'none');
+  }
+  function go(d){ i=(i+d+list.length)%list.length; draw(); }
+  function close(fromHistory){
+    if(!box) return; box.remove(); box=null; document.removeEventListener('keydown',key);
+    if(!document.querySelector('#modal:not(.hidden)')) document.body.style.overflow='';
+    if(pushed && !fromHistory){ pushed=false; history.back(); } pushed=false;
+  }
+  function key(ev){ if(ev.key==='Escape') close(); if(ev.key==='ArrowRight') go(1); if(ev.key==='ArrowLeft') go(-1); }
+  window.openGallery = function(photos, start=0, name=''){
+    list=(photos||[]).filter(Boolean); if(!list.length) return;
+    i=Math.min(Math.max(0,start),list.length-1); title=name;
+    if(box) box.remove();
+    box=document.createElement('div'); box.className='lb'; box.setAttribute('role','dialog'); box.setAttribute('aria-label','Photo viewer');
+    box.innerHTML=`<div class="lb-top"><b>${e(title)}</b><div style="display:flex;gap:14px;align-items:center"><span></span><button class="lb-x" aria-label="Close">×</button></div></div>
+      <div class="lb-stage"><button class="lb-nav lb-prev" aria-label="Previous photo">‹</button><img alt="${e(title)}"><div class="lb-err" style="display:none">This photo could not be loaded.</div><button class="lb-nav lb-next" aria-label="Next photo">›</button></div>
+      <div class="lb-thumbs">${list.map((p,k)=>`<img src="${e(p)}" data-k="${k}" alt="Photo ${k+1}" loading="lazy">`).join('')}</div>`;
+    document.body.appendChild(box); document.body.style.overflow='hidden';
+    box.querySelector('.lb-x').onclick=()=>close();
+    box.querySelector('.lb-prev').onclick=ev=>{ev.stopPropagation();go(-1);};
+    box.querySelector('.lb-next').onclick=ev=>{ev.stopPropagation();go(1);};
+    box.querySelector('.lb-stage').onclick=ev=>{ if(ev.target.classList.contains('lb-stage')) close(); };
+    box.querySelector('.lb-thumbs').onclick=ev=>{ const t=ev.target.closest('[data-k]'); if(t){ i=+t.dataset.k; draw(); } };
+    box.querySelector('.lb-stage img').onerror=function(){ if(!box) return; this.style.display='none'; box.querySelector('.lb-err').style.display=''; };
+    const st=box.querySelector('.lb-stage');
+    st.addEventListener('touchstart',ev=>{x0=ev.touches[0].clientX;},{passive:true});
+    st.addEventListener('touchend',ev=>{ if(x0==null) return; const dx=ev.changedTouches[0].clientX-x0; if(Math.abs(dx)>40) go(dx<0?1:-1); x0=null; });
+    document.addEventListener('keydown',key);
+    if(!pushed){ history.pushState({...(history.state||{}), gallery:true}, '', location.href); pushed=true; }
+    draw();
+  };
+  // the browser back button closes the viewer
+  addEventListener('popstate',ev=>{ if(box){ pushed=false; close(true); ev.stopImmediatePropagation(); } }, true);
+  window.galleryOpen=()=>!!box;
+})();
+</script>
+<!-- ===== /Photo viewer ===== -->
+
+
+<!-- ================= NAV ================= -->
+<header class="nav"><div class="wrap">
+  <a class="logo" href="/" aria-label="KostasTravel home">
+    <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="16" cy="16" r="14"/><path d="M9 22V11h14v11M13 22v-7h6v7M8 11l8-5 8 5"/></svg>
+    KOSTASTRAVEL</a>
+  <nav><a href="#destinations" data-home>Destinations</a><a href="#" id="navAI">AI search</a><a href="#" id="navManage">Manage booking</a></nav>
+  <div class="prefs">
+    <select id="cur" aria-label="Currency"><option value="EUR">EUR €</option></select>
+    <select id="nat" aria-label="Guest nationality"><option value="GR">Greece</option></select>
+  </div>
+</div></header>
+
+<!-- ================= HERO ================= -->
+<section class="hero"><div class="wrap" style="width:100%">
+  <div class="eyebrow">Καλώς ήρθατε · Welcome</div>
+  <h1>Greek hospitality, <em>wherever</em> you wander.</h1>
+  <p class="lead">Live rates from hotels worldwide, hand-picked Aegean escapes, and an AI concierge that understands the stay you're dreaming of.</p>
+  <div id="homeSlot"></div>
+</div></section>
+<div class="searchTop hidden" id="topSlotWrap"><div class="wrap" id="topSlot"></div></div>
+
+<!-- search card (moved between hero and top bar) -->
+<div class="sc" id="sc">
+  <div class="tabs"><button class="tab on" data-mode="dest">Destination</button><button class="tab" data-mode="ai">✨ Describe your stay</button></div>
+  <form class="grid5" id="f" autocomplete="off">
+    <div class="f wide" id="destField">
+      <label for="dest">Where to?</label><input id="dest" placeholder="City, island, region or landmark">
+      <ul id="sug" class="pop hidden"></ul>
+    </div>
+    <div class="f wide hidden" id="aiField">
+      <label for="aiq">Describe it</label><input id="aiq" placeholder="e.g. romantic cliffside hotel with caldera views in Santorini">
+    </div>
+    <div class="f"><label for="ci">Check-in</label><input type="date" id="ci"></div>
+    <div class="f"><label for="co">Check-out</label><input type="date" id="co"></div>
+    <div class="f" id="guestField"><label>Rooms & guests</label><div class="val" id="guestVal" tabindex="0">1 room · 2 adults</div>
+      <div id="guestPop" class="pop hidden"></div></div>
+    <button class="btn" id="go">Search</button>
+  </form>
+  <div class="aiHint hidden" id="aiHints">
+    <button type="button">Quiet boutique hotel in Naxos near the beach</button>
+    <button type="button">Family resort in Crete with kids pool</button>
+    <button type="button">Design hotel in Athens with Acropolis view</button>
+    <button type="button">Adults-only infinity pool in Mykonos</button>
+  </div>
+</div>
+
+<main>
+<!-- ================= HOME ================= -->
+<div id="vHome">
+  <div class="meander"></div>
+  <section class="block" id="destinations"><div class="wrap">
+    <div class="secHead"><div><div class="eyebrow">Ελλάδα · Greece</div><h2>Where the Aegean meets the light</h2></div>
+      <p class="mute" style="max-width:380px">Tap a destination to see live availability for your dates.</p></div>
+    <div class="dests" id="dests"></div>
+  </div></section>
+
+  <section class="block" style="padding-top:0"><div class="wrap">
+    <div class="secHead"><div><div class="eyebrow">Φιλοξενία · The KostasTravel way</div><h2>Booking, done the Greek way</h2></div></div>
+    <div class="why">
+      <div class="wcard"><div class="ic">⚡</div><h3>Live rates</h3><p class="mute">Prices and rooms pulled in real time, then re-checked before you pay.</p></div>
+      <div class="wcard"><div class="ic">✨</div><h3>AI concierge</h3><p class="mute">Describe the stay you want in plain words. We find hotels that match the feeling.</p></div>
+      <div class="wcard"><div class="ic">🛡️</div><h3>Flexible stays</h3><p class="mute">Filter for free cancellation and see exactly when the deadline is.</p></div>
+      <div class="wcard"><div class="ic">🔒</div><h3>Secure payment</h3><p class="mute">Card details go straight to a certified payment processor, never to us.</p></div>
+    </div>
+  </div></section>
+
+  <section class="block" style="padding-top:0"><div class="wrap">
+    <div class="band">
+      <div><div class="eyebrow">Concierge</div><h2>Not sure where to go?</h2>
+        <p>Tell our AI concierge what you're after: the view, the mood, the people you're travelling with. It reads hotel stories and finds the right fit.</p>
+        <button class="btn gold" id="bandAI">Try the AI concierge</button></div>
+      <div class="quote">“Philoxenia: the ancient Greek art of welcoming the stranger as a friend.”</div>
+    </div>
+  </div></section>
+</div>
+
+<!-- ================= RESULTS ================= -->
+<div id="vResults" class="hidden"><div class="wrap resLayout">
+  <aside class="side" id="filters">
+    <h4>Your budget (total)</h4>
+    <input type="range" id="fPrice" min="0" max="100" value="100"><div class="mute" id="fPriceLbl">Any price</div>
+    <h4>Star rating</h4>
+    <div id="fStars"></div>
+    <h4>Guest score</h4>
+    <label><input type="radio" name="fScore" value="0" checked> Any</label>
+    <label><input type="radio" name="fScore" value="7"> 7+ Good</label>
+    <label><input type="radio" name="fScore" value="8"> 8+ Very good</label>
+    <label><input type="radio" name="fScore" value="9"> 9+ Exceptional</label>
+    <h4>Booking options</h4>
+    <label><input type="checkbox" id="fFree"> Free cancellation</label>
+    <label><input type="checkbox" id="fBfast"> Breakfast included</label>
+    <h4>Hotel name</h4>
+    <input class="in" id="fName" placeholder="Search by name" style="padding:10px 12px">
+    <button class="link" id="fReset" style="margin-top:10px">Reset filters</button>
+  </aside>
+  <div>
+    <div class="bar"><div><div class="eyebrow" id="resEyebrow">Live availability</div><h2 id="resTitle"></h2><div class="mute" id="resSub"></div></div>
+      <select class="in" id="sort" style="width:auto"><option value="rec">Recommended</option><option value="pl">Price: low to high</option><option value="ph">Price: high to low</option><option value="sc">Guest score</option><option value="st">Stars</option></select></div>
+    <div id="aiBanner" class="aiBanner hidden"></div>
+    <div id="results"></div>
+  </div>
+</div></div>
+
+<!-- ================= CHECKOUT ================= -->
+<div id="vCheckout" class="hidden"><div class="wrap">
+  <div class="steps"><span class="on"><i>1</i>Your details</span><span class="ln"></span><span id="st2"><i>2</i>Payment</span><span class="ln"></span><span><i>3</i>Confirmed</span></div>
+  <div class="ck">
+    <div class="panel">
+      <a href="#" id="back" class="mute">← Back to results</a>
+      <h2 style="margin-top:12px">Who's checking in?</h2><div class="mute">Your confirmation goes to this email.</div>
+      <div class="two mt"><input class="in" id="fn" placeholder="First name" autocomplete="given-name"><input class="in" id="ln" placeholder="Last name" autocomplete="family-name"></div>
+      <input class="in mt" id="em" type="email" placeholder="Email address" autocomplete="email">
+      <details class="mt"><summary class="mute" style="cursor:pointer">Have a voucher code?</summary><input class="in mt" id="voucher" placeholder="Voucher code"></details>
+      <button class="btn mt" id="pay" style="width:100%">Lock this price &amp; continue</button>
+      <div id="checkRes"></div>
+      <div id="sbNote" class="note hidden">Test mode: card <b>4242 4242 4242 4242</b>, any future expiry, any 3-digit CVC.</div>
+      <div id="payment" style="margin-top:16px"></div>
+    </div>
+    <div class="panel sum"><div class="ph" id="ckImg"></div><div class="stars" id="ckStars"></div><h2 id="ckTitle" style="font-size:28px"></h2><div id="ckSum"></div></div>
+  </div>
+</div></div>
+
+<!-- ================= CONFIRMATION ================= -->
+<div id="vDone" class="hidden"><div class="wrap"><div class="panel done" id="done"></div></div></div>
+
+<!-- ================= MANAGE BOOKING ================= -->
+<div id="vManage" class="hidden"><div class="wrap" style="max-width:720px;margin:50px auto 80px">
+  <div class="panel">
+    <div class="eyebrow">Manage booking</div><h2>Find your reservation</h2>
+    <p class="mute">Enter your booking ID and the email you booked with.</p>
+    <div class="two"><input class="in" id="mId" placeholder="Booking ID"><input class="in" id="mEm" type="email" placeholder="Email"></div>
+    <button class="btn mt" id="mFind">Find booking</button>
+    <div id="mOut"></div>
+  </div>
+</div></div>
+</main>
+
+<!-- ================= HOTEL MODAL ================= -->
+<div class="modal hidden" id="modal"><div class="mbox"><button class="x" id="mx" aria-label="Close">×</button><div id="mbody"></div></div></div>
+
+<footer>
+  <div class="meander" style="opacity:.6"></div>
+  <div class="wrap">
+    <div class="cols">
+      <div><a class="logo" href="/" style="color:#fff;opacity:1">KOSTASTRAVEL</a><p style="max-width:340px">Greek hospitality, wherever you wander. Hotel rates and bookings powered by Nuitee LiteAPI.</p></div>
+      <div><h5>Explore</h5><a data-city="Santorini">Santorini</a><a data-city="Mykonos">Mykonos</a><a data-city="Athens">Athens</a><a data-city="Crete">Crete</a></div>
+      <div><h5>Travellers</h5><a id="fManage">Manage booking</a><a id="fAI">AI concierge</a></div>
+      <div><h5>Developers</h5><a href="/mapping">Room Mapping Inspector</a><a href="/lab">API Lab</a></div>
+    </div>
+    <div class="bottom"><span>© 2026 KostasTravel</span><span id="envTag"></span></div>
+  </div>
+</footer>
+<div class="toast hidden" id="toast"></div>
+
+<script>
+/* ================= helpers ================= */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const api = (u, body) => fetch(u, body ? {method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)} : {})
+  .then(async r => { const j = await r.json().catch(()=>({})); if (!r.ok) throw new Error(j.error || 'Something went wrong'); return j; });
+const store = { get(k,d){ try{ return JSON.parse(localStorage.getItem(k)) ?? d }catch{ return d } }, set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)) }catch{} } };
+const S = { cur: store.get('cur','EUR'), nat: store.get('nat','GR'), rooms: [{adults:2,children:[]}], mode:'dest',
+            placeId:null, placeName:'', hotels:[], ai:null, sel:null, details:{}, cfg:{sandbox:true} };
+const money = (a,c=S.cur) => { try { return new Intl.NumberFormat('en',{style:'currency',currency:c||'EUR',maximumFractionDigits:0}).format(a) } catch { return Math.round(a)+' '+c } };
+const day = n => new Date(Date.now()+n*864e5).toISOString().slice(0,10);
+const fmtD = s => s ? new Date(s).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '';
+const fmtDT = s => s ? new Date(s.replace(' ','T')).toLocaleString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+const nights = () => Math.max(1, Math.round((new Date($('co').value) - new Date($('ci').value)) / 864e5));
+const guests = () => S.rooms.reduce((s,r)=>s+r.adults+r.children.length,0);
+const scoreWord = s => s>=9?'Exceptional':s>=8.5?'Excellent':s>=8?'Very good':s>=7?'Good':'Rated';
+function toast(m){ $('toast').textContent=m; $('toast').classList.remove('hidden'); clearTimeout(toast.t); toast.t=setTimeout(()=>$('toast').classList.add('hidden'),3800); }
+
+/* ================= views ================= */
+// Browser history: every page switch gets its own entry, so the browser's back/forward arrows work
+const HASH = {vHome:'', vResults:'#results', vCheckout:'#checkout', vDone:'#confirmed', vManage:'#manage'};
+function view(v, how='push'){
+  const url = location.pathname + (HASH[v]||'');
+  if (how==='push' && history.state?.v !== v) history.pushState({v}, '', url);
+  else if (how!=='none') history.replaceState({v}, '', url);
+  showView(v);
+}
+addEventListener('popstate', e => {
+  closeModal(true);
+  let v = e.state?.v || 'vHome';
+  if (v==='vResults' && !S.hotels.length) v='vHome';      // nothing to show (e.g. after a reload)
+  if (v==='vCheckout' && !S.sel) v = S.hotels.length ? 'vResults' : 'vHome';
+  if (v==='vDone') v='vHome';                              // never re-run a booking from history
+  if (e.state?.modal && v==='vResults') { showView('vResults'); return openHotel(e.state.modal, false); }
+  showView(v);
+});
+function showView(v){
+  ['vHome','vResults','vCheckout','vDone','vManage'].forEach(x => $(x).classList.toggle('hidden', x!==v));
+  const home = v==='vHome';
+  document.body.classList.toggle('solid', !home);
+  (home ? $('homeSlot') : $('topSlot')).appendChild($('sc'));
+  $('topSlotWrap').classList.toggle('hidden', home || v==='vDone' || v==='vManage' || v==='vCheckout');
+  scrollTo({top:0});
+}
+
+/* ================= init ================= */
+$('ci').value = day(21); $('co').value = day(24); $('ci').min = day(0); $('co').min = day(1);
+$('ci').addEventListener('change', () => { if ($('co').value <= $('ci').value) { const d=new Date($('ci').value); d.setDate(d.getDate()+2); $('co').value=d.toISOString().slice(0,10); } $('co').min=$('ci').value; });
+
+api('/api/config').then(c => { S.cfg=c; $('envTag').textContent = c.sandbox ? 'Sandbox mode · test bookings only' : ''; }).catch(()=>{});
+api('/api/meta').then(m => {
+  if (m.currencies?.length) $('cur').innerHTML = m.currencies.map(c=>`<option value="${esc(c.code)}">${esc(c.code)}</option>`).join('');
+  if (m.countries?.length)  $('nat').innerHTML = m.countries.map(c=>`<option value="${esc(c.code)}">${esc(c.name)}</option>`).join('');
+  $('cur').value = S.cur; $('nat').value = S.nat;
+}).catch(()=>{});
+$('cur').value = S.cur;
+$('cur').onchange = e => { S.cur=e.target.value; store.set('cur',S.cur); if (!$('vResults').classList.contains('hidden')) runSearch(); };
+$('nat').onchange = e => { S.nat=e.target.value; store.set('nat',S.nat); if (!$('vResults').classList.contains('hidden')) runSearch(); };
+
+/* ================= destinations (real photos via /data/hotels) ================= */
+const DESTS = [['Santorini','Σαντορίνη','Caldera sunsets'],['Mykonos','Μύκονος','Windmills & nightlife'],['Athens','Αθήνα','Ancient & modern'],
+  ['Crete','Κρήτη','Beaches & gorges'],['Rhodes','Ρόδος','Medieval old town'],['Corfu','Κέρκυρα','Venetian & green'],['Naxos','Νάξος','Quiet Cycladic charm']];
+$('dests').innerHTML = DESTS.map(([en,gr,tag]) => `<button class="dest" data-city="${en}"><div class="ph" data-ph="${en}"></div><span class="gk">${gr}</span>
+  <div class="cap"><h3>${en}</h3><small>${tag}</small></div></button>`).join('');
+DESTS.forEach(([en]) => api('/api/destphoto?cc=GR&city='+encodeURIComponent(en)).then(r => {
+  if (r.photo) document.querySelectorAll(`[data-ph="${en}"]`).forEach(el => el.style.backgroundImage = `url('${r.photo}')`);
+}).catch(()=>{}));
+document.addEventListener('click', async e => {
+  const el = e.target.closest('[data-city]'); if (!el) return;
+  e.preventDefault(); setMode('dest');
+  try {
+    const list = await api('/api/places?q='+encodeURIComponent(el.dataset.city+' Greece'));
+    if (!list.length) return toast('Destination not found');
+    S.placeId = list[0].placeId; S.placeName = el.dataset.city; $('dest').value = el.dataset.city; runSearch();
+  } catch(err){ toast(err.message); }
+});
+
+/* ================= search modes ================= */
+function setMode(m){
+  S.mode = m;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.mode===m));
+  $('destField').classList.toggle('hidden', m!=='dest'); $('aiField').classList.toggle('hidden', m!=='ai'); $('aiHints').classList.toggle('hidden', m!=='ai');
+}
+document.querySelectorAll('.tab').forEach(t => t.onclick = () => { setMode(t.dataset.mode); (t.dataset.mode==='ai'?$('aiq'):$('dest')).focus(); });
+$('aiHints').onclick = e => { const b=e.target.closest('button'); if(b){ $('aiq').value=b.textContent; runSearch(); } };
+const goAI = e => { e?.preventDefault(); view('vHome'); setMode('ai'); scrollTo({top:0}); setTimeout(()=>$('aiq').focus(),300); };
+$('navAI').onclick = goAI; $('bandAI').onclick = goAI; $('fAI').onclick = goAI;
+const goManage = e => { e.preventDefault(); view('vManage'); };
+$('navManage').onclick = goManage; $('fManage').onclick = goManage;
+document.querySelector('[data-home]').onclick = e => { e.preventDefault(); view('vHome'); setTimeout(()=>$('destinations').scrollIntoView({behavior:'smooth'}),50); };
+
+/* ================= autocomplete ================= */
+let tAC, acIdx=-1;
+$('dest').addEventListener('input', e => {
+  S.placeId=null; clearTimeout(tAC); const q=e.target.value.trim();
+  if (q.length<2) return $('sug').classList.add('hidden');
+  tAC = setTimeout(async () => {
+    const list = await api('/api/places?q='+encodeURIComponent(q)).catch(()=>[]);
+    acIdx=-1;
+    $('sug').innerHTML = list.slice(0,8).map(p => `<li data-id="${esc(p.placeId)}" data-n="${esc(p.displayName)}"><span class="pin">⌖</span><span><b>${esc(p.displayName)}</b><br><span class="mute">${esc(p.formattedAddress||'')}</span></span></li>`).join('');
+    $('sug').classList.toggle('hidden', !list.length);
+  }, 220);
+});
+$('dest').addEventListener('keydown', e => {
+  const items=[...$('sug').querySelectorAll('li')]; if (!items.length || $('sug').classList.contains('hidden')) return;
+  if (e.key==='ArrowDown'||e.key==='ArrowUp'){ e.preventDefault(); acIdx=(acIdx+(e.key==='ArrowDown'?1:-1)+items.length)%items.length; items.forEach((li,i)=>li.classList.toggle('act',i===acIdx)); }
+  if (e.key==='Enter' && acIdx>=0){ e.preventDefault(); pick(items[acIdx]); }
+});
+const pick = li => { S.placeId=li.dataset.id; S.placeName=li.dataset.n; $('dest').value=li.dataset.n; $('sug').classList.add('hidden'); };
+$('sug').addEventListener('mousedown', e => { const li=e.target.closest('li'); if(li){ e.preventDefault(); pick(li); } });
+$('dest').addEventListener('blur', () => setTimeout(()=>$('sug').classList.add('hidden'),150));
+
+/* ================= rooms & guests ================= */
+function guestLabel(){ const a=S.rooms.reduce((s,r)=>s+r.adults,0), c=S.rooms.reduce((s,r)=>s+r.children.length,0);
+  $('guestVal').textContent = `${S.rooms.length} room${S.rooms.length>1?'s':''} · ${a} adult${a>1?'s':''}${c?` · ${c} child${c>1?'ren':''}`:''}`; }
+function drawGuests(){
+  $('guestPop').innerHTML = S.rooms.map((r,i)=>`<div class="gRoom"><div class="gRow"><b>Room ${i+1}</b>${S.rooms.length>1?`<button type="button" class="link" data-rm="${i}">Remove</button>`:''}</div>
+    <div class="gRow"><span>Adults</span><span class="step"><button type="button" data-a="${i}" data-d="-1">−</button><b>${r.adults}</b><button type="button" data-a="${i}" data-d="1">+</button></span></div>
+    <div class="gRow"><span>Children <span class="mute">0–17</span></span><span class="step"><button type="button" data-c="${i}" data-d="-1">−</button><b>${r.children.length}</b><button type="button" data-c="${i}" data-d="1">+</button></span></div>
+    ${r.children.length?`<div class="ages">${r.children.map((a,j)=>`<select data-age="${i}:${j}" aria-label="Child ${j+1} age">${Array.from({length:18},(_,k)=>`<option ${k===a?'selected':''} value="${k}">${k} yrs</option>`).join('')}</select>`).join('')}</div>`:''}
+  </div>`).join('') + `<div class="gRow" style="margin-top:8px">${S.rooms.length<5?'<button type="button" class="link" id="addRoom">+ Add room</button>':'<span></span>'}<button type="button" class="btn" id="gDone" style="padding:10px 18px">Done</button></div>`;
+  guestLabel();
+}
+$('guestVal').onclick = () => { drawGuests(); $('guestPop').classList.toggle('hidden'); };
+$('guestPop').addEventListener('click', e => {
+  e.stopPropagation(); // the popup redraws itself, so the outside-click check must not see this click
+  const b=e.target.closest('button'); if(!b) return; const d=+b.dataset.d;
+  if (b.dataset.a!=null){ const r=S.rooms[b.dataset.a]; r.adults=Math.min(6,Math.max(1,r.adults+d)); }
+  else if (b.dataset.c!=null){ const r=S.rooms[b.dataset.c]; if(d>0&&r.children.length<4) r.children.push(8); if(d<0) r.children.pop(); }
+  else if (b.dataset.rm!=null) S.rooms.splice(+b.dataset.rm,1);
+  else if (b.id==='addRoom') S.rooms.push({adults:2,children:[]});
+  else if (b.id==='gDone') return $('guestPop').classList.add('hidden');
+  drawGuests();
+});
+$('guestPop').addEventListener('change', e => { const s=e.target.dataset.age; if(s){ const [i,j]=s.split(':'); S.rooms[i].children[j]=+e.target.value; } });
+document.addEventListener('click', e => { if (!e.target.closest('#guestField')) $('guestPop').classList.add('hidden'); });
+guestLabel();
+
+/* ================= search ================= */
+$('f').addEventListener('submit', e => { e.preventDefault(); runSearch(); });
+async function runSearch(){
+  const ai = S.mode==='ai';
+  if (ai && $('aiq').value.trim().length<4) return $('aiq').focus();
+  if (!ai && !S.placeId) { $('dest').focus(); return toast('Pick a destination from the list'); }
+  view('vResults'); $('go').disabled=true; resetFilters(false);
+  $('aiBanner').classList.add('hidden');
+  $('resTitle').textContent = ai ? 'Finding your kind of place…' : S.placeName;
+  $('resEyebrow').textContent = ai ? '✨ AI concierge' : 'Live availability';
+  $('resSub').textContent = `${fmtD($('ci').value)} – ${fmtD($('co').value)} · ${nights()} night${nights()>1?'s':''} · ${guests()} guest${guests()>1?'s':''}`;
+  $('results').innerHTML = '<div class="skel"></div>'.repeat(3);
+  const base = {checkin:$('ci').value, checkout:$('co').value, rooms:S.rooms, currency:S.cur, nationality:S.nat};
+  try {
+    if (ai) {
+      const matches = await api('/api/ai-search?q='+encodeURIComponent($('aiq').value.trim()));
+      S.ai = Object.fromEntries(matches.map((m,i)=>[m.id,{...m,rank:i}]));
+      if (!matches.length) throw new Error('No hotels matched that description. Try different words.');
+      S.hotels = await api('/api/rates', {...base, hotelIds: matches.map(m=>m.id)});
+      $('resTitle').textContent = `“${$('aiq').value.trim()}”`;
+      $('aiBanner').innerHTML = `✨ The AI concierge found <b>${matches.length}</b> hotels matching your description. <b>${S.hotels.length}</b> have rooms on your dates, ordered by how well they match.`;
+      $('aiBanner').classList.remove('hidden');
+    } else {
+      S.ai = null;
+      S.hotels = await api('/api/rates', {...base, placeId:S.placeId});
+    }
+    setupFilters(); render();
+  } catch(err){ $('results').innerHTML = `<div class="empty"><h3>We couldn't load hotels</h3><p class="mute">${esc(err.message)}</p></div>`; }
+  $('go').disabled=false;
+}
+
+/* ================= filters & sort ================= */
+let maxP = 0;
+function setupFilters(){
+  maxP = Math.ceil(Math.max(0,...S.hotels.map(h=>h.from||0)));
+  $('fPrice').max = maxP || 100; $('fPrice').value = maxP || 100; priceLbl();
+  const st=[5,4,3,2].filter(s=>S.hotels.some(h=>Math.round(h.stars)===s));
+  $('fStars').innerHTML = st.length ? st.map(s=>`<label><input type="checkbox" value="${s}"> <span class="stars">${'★'.repeat(s)}</span></label>`).join('') : '<div class="mute">Not available</div>';
+}
+function resetFilters(redraw=true){
+  $('fPrice').value=$('fPrice').max; document.querySelector('[name=fScore][value="0"]').checked=true;
+  $('fFree').checked=false; $('fBfast').checked=false; $('fName').value=''; $('sort').value='rec';
+  document.querySelectorAll('#fStars input').forEach(i=>i.checked=false); priceLbl(); if(redraw) render();
+}
+const priceLbl = () => $('fPriceLbl').textContent = (+$('fPrice').value>=+$('fPrice').max) ? 'Any price' : `Up to ${money(+$('fPrice').value)}`;
+$('fPrice').oninput = () => { priceLbl(); render(); };
+['fFree','fBfast','sort'].forEach(id=>$(id).onchange=render); $('fName').oninput=render;
+$('filters').addEventListener('change', e => { if (e.target.name==='fScore' || e.target.closest('#fStars')) render(); });
+$('fReset').onclick = () => resetFilters();
+
+function filtered(){
+  const maxv=+$('fPrice').value, any=maxv>=+$('fPrice').max, minS=+document.querySelector('[name=fScore]:checked').value;
+  const stars=[...document.querySelectorAll('#fStars input:checked')].map(i=>+i.value), name=$('fName').value.trim().toLowerCase();
+  const free=$('fFree').checked, bf=$('fBfast').checked;
+  let list = S.hotels.map(h => ({...h, shown: h.offers.filter(o => (!free||o.refundable) && (!bf||/breakfast|half|full|all/i.test(o.board)))}))
+    .filter(h => h.shown.length && (any || h.shown[0].price<=maxv) && (!minS || (h.score||0)>=minS)
+      && (!stars.length || stars.includes(Math.round(h.stars))) && (!name || h.name.toLowerCase().includes(name)));
+  const s=$('sort').value, p=h=>h.shown[0].price;
+  if (s==='pl') list.sort((a,b)=>p(a)-p(b)); else if (s==='ph') list.sort((a,b)=>p(b)-p(a));
+  else if (s==='sc') list.sort((a,b)=>(b.score||0)-(a.score||0)); else if (s==='st') list.sort((a,b)=>(b.stars||0)-(a.stars||0));
+  else if (S.ai) list.sort((a,b)=>(S.ai[a.hotelId]?.rank??99)-(S.ai[b.hotelId]?.rank??99));
+  else list.sort((a,b)=>((b.score||7)*8 - p(b)/ (maxP||1)*10) - ((a.score||7)*8 - p(a)/(maxP||1)*10));
+  return list;
+}
+function offerRow(o, h){
+  const n=nights();
+  const mr = o.mappedRoomId ? S.details[h.hotelId]?.d?.rooms?.find(r=>r.id===o.mappedRoomId) : null; // matched via room mapping
+  const rp = mr?.photos?.[0] || mr?.photo;
+  const facts = mr ? [...(mr.beds||[]), mr.size, mr.maxOccupancy?`max ${mr.maxOccupancy} guests`:''].filter(Boolean).join(' · ') : '';
+  return `<div class="offer"><div style="display:flex;gap:12px;align-items:center">${rp?`<button type="button" class="rph" data-rg="${esc(h.hotelId)}|${esc(mr.id)}" title="See photos of this room" style="background-image:url('${esc(rp)}')">${(mr.photos||[]).length>1?`<span>📷 ${mr.photos.length}</span>`:''}</button>`:''}<div><div class="rn">${esc(o.room)}</div>${facts?`<div class="mute" style="font-size:12px">${esc(facts)}</div>`:''}${mr?`<button type="button" class="link rdl" data-rd="${esc(h.hotelId)}|${esc(mr.id)}|${esc(o.offerId)}">Room details</button>`:''}<div class="meta">
+      ${o.refundable?`<span class="chip g">✓ Free cancellation${o.freeUntil?' until '+esc(fmtD(o.freeUntil)):''}</span>`:'<span class="chip t">Non-refundable</span>'}
+      ${o.board?`<span class="chip o">${esc(o.board)}</span>`:''}${o.payAtHotel?`<span class="chip o">+${money(o.payAtHotel,o.currency)} at hotel</span>`:''}</div></div></div>
+    <div style="display:flex;align-items:center"><div class="pr"><b>${money(o.price,o.currency)}</b><small>${money(o.price/n,o.currency)} / night</small></div>
+    <button class="sel" data-sel="${esc(h.hotelId)}|${esc(o.offerId)}">Select</button></div></div>`;
+}
+function render(){
+  const list=filtered(), n=nights();
+  if (!S.hotels.length) { $('results').innerHTML='<div class="empty"><h3>No availability</h3><p class="mute">Try different dates or another destination.</p></div>'; return; }
+  if (!list.length) { $('results').innerHTML='<div class="empty"><h3>No hotels match your filters</h3><button class="link" onclick="resetFilters()">Reset filters</button></div>'; return; }
+  $('resSub').textContent = `${list.length} of ${S.hotels.length} hotels · ${fmtD($('ci').value)} – ${fmtD($('co').value)} · ${n} night${n>1?'s':''} · ${guests()} guests`;
+  $('results').innerHTML = list.map((h,i) => { const ai=S.ai?.[h.hotelId]; return `
+    <article class="card">
+      <div class="img" data-open="${esc(h.hotelId)}" style="background-image:url('${esc(h.photo)}')">${ai?'<span class="badge ai">✨ AI match</span>':i<3&&$('sort').value==='rec'?'<span class="badge">Top pick</span>':''}</div>
+      <div class="body">
+        <div class="top"><div>${h.stars?`<div class="stars">${'★'.repeat(Math.round(h.stars))}</div>`:''}<h3 data-open="${esc(h.hotelId)}">${esc(h.name)}</h3><div class="mute">${esc(h.address)}</div></div>
+          ${h.score?`<div class="score"><span><strong>${scoreWord(h.score)}</strong>${h.reviews?h.reviews.toLocaleString()+' reviews':''}</span><b>${h.score.toFixed(1)}</b></div>`:''}</div>
+        ${ai?.story?`<p class="story">${esc(String(ai.story).slice(0,220))}${String(ai.story).length>220?'…':''}</p>`:''}
+        <div class="offers">${h.shown.slice(0,3).map(o=>offerRow(o,h)).join('')}</div>
+        <div class="more"><span class="mute">${h.shown.length} room option${h.shown.length>1?'s':''}</span><button class="link" data-open="${esc(h.hotelId)}">View hotel, photos & reviews →</button></div>
+      </div>
+    </article>`; }).join('');
+}
+
+/* ================= hotel details modal ================= */
+document.addEventListener('click', e => {
+  const g=e.target.closest('[data-rg]'); if (g) { const [hid,rid]=g.dataset.rg.split('|'); const rm=S.details[hid]?.d?.rooms?.find(r=>r.id===rid); if (rm) openGallery(rm.photos?.length?rm.photos:[rm.photo], 0, rm.name); return; }
+  const rd=e.target.closest('[data-rd]'); if (rd) { const [hid,rid,oid]=rd.dataset.rd.split('|'); return roomDetails(hid,rid,oid); }
+  const o=e.target.closest('[data-open]'); if (o) return openHotel(o.dataset.open);
+  const s=e.target.closest('[data-sel]'); if (s){ const [hid,oid]=s.dataset.sel.split('|'); const h=S.hotels.find(x=>x.hotelId===hid); select(h, h.offers.find(x=>x.offerId===oid)); }
+});
+$('mx').onclick = () => closeModal(); $('modal').onclick = e => { if (e.target.id==='modal') closeModal(); };
+document.addEventListener('keydown', e => { if (e.key==='Escape' && !window.galleryOpen?.()) closeModal(); });
+function closeModal(fromHistory){
+  if ($('modal').classList.contains('hidden')) return;
+  if (!fromHistory && history.state?.modal) return history.back();   // back arrow and × behave the same
+  $('modal').classList.add('hidden'); document.body.style.overflow='';
+}
+async function openHotel(id, push=true){
+  if (push) history.pushState({v:'vResults', modal:id}, '', location.pathname + '#hotel-' + encodeURIComponent(id));
+  const h=S.hotels.find(x=>x.hotelId===id); if(!h) return;
+  $('modal').classList.remove('hidden'); document.body.style.overflow='hidden';
+  $('mbody').innerHTML = `<div class="gal"><div style="background-image:url('${esc(h.photo)}')"></div><div></div><div></div><div></div><div></div></div>
+    <div class="mcontent"><div><h2>${esc(h.name)}</h2><div class="skel" style="height:120px;margin-top:16px"></div></div><div></div></div>`;
+  if (!S.details[id]) {
+    const [d, r] = await Promise.all([api('/api/hotel/'+encodeURIComponent(id)).catch(()=>({})), api('/api/reviews/'+encodeURIComponent(id)).catch(()=>({reviews:[],sentiment:{}}))]);
+    S.details[id] = {d, r};
+  }
+  if (!S.details[id].full) {   // a city-wide search can return only some room types; ask for this hotel alone
+    S.details[id].full = true;
+    try {
+      const fresh = await api('/api/rates', {hotelIds:[id], checkin:$('ci').value, checkout:$('co').value, rooms:S.rooms, currency:S.cur, nationality:S.nat});
+      if (fresh[0]?.offers?.length > h.offers.length) { h.offers = fresh[0].offers; h.from = fresh[0].from; render(); }
+    } catch {}
+  }
+  const {d, r} = S.details[id]; const imgs=[...new Set([h.photo,...(d.images||[])].filter(Boolean))];
+  const shown = h.offers; const sc=h.score||d.score; const sent=r.sentiment||{};
+  $('mbody').innerHTML = `
+    <div class="galw"><div class="gal" id="gal">${[0,1,2,3,4].map(i=>`<div data-img="${i}" role="button" aria-label="Open photo ${i+1}" style="background-image:url('${esc(imgs[i]||'')}')"></div>`).join('')}</div>
+    ${imgs.length?`<button class="galAll" id="galAll">📷 Show all ${imgs.length} photos</button>`:''}</div>
+    <div class="mcontent">
+      <div>
+        ${h.stars?`<div class="stars">${'★'.repeat(Math.round(h.stars))}</div>`:''}<h2>${esc(h.name)}</h2>
+        <div class="mute">${esc(d.address||h.address)}</div>
+        ${S.ai?.[id]?.story?`<p class="story">${esc(S.ai[id].story)}</p>`:''}
+        <div class="mtabs"><button class="on" data-mt="rooms">Rooms (${shown.length})</button><button data-mt="about">About</button><button data-mt="reviews">Reviews${r.reviews?.length?` (${r.reviews.length})`:''}</button></div>
+        <div data-mp="rooms">${shown.map(o=>offerRow(o,h)).join('')}</div>
+        <div data-mp="about" class="hidden">
+          ${d.description?`<div class="desc" id="desc"><p>${esc(d.description)}</p></div><button class="link" onclick="this.previousElementSibling.classList.add('open');this.remove()">Read more</button>`:'<p class="mute">No description available.</p>'}
+          ${d.facilities?.length?`<h3 style="font-size:24px;margin:20px 0 6px">Facilities</h3><div class="facs">${d.facilities.map(f=>`<span class="chip o">${esc(f)}</span>`).join('')}</div>`:''}
+          ${d.important?`<div class="note">${esc(d.important.slice(0,600))}</div>`:''}
+        </div>
+        <div data-mp="reviews" class="hidden">
+          ${sent.categories?.length?`<h3 style="font-size:24px;margin:0 0 6px">What guests say <span class="chip">AI summary</span></h3>${sent.categories.slice(0,6).map(c=>`<div class="cat"><div class="lbl"><span>${esc(c.name)}</span><span>${esc(c.rating)}/10</span></div><div class="meter"><i style="width:${Math.min(100,(+c.rating||0)*10)}%"></i></div></div>`).join('')}`:''}
+          ${(sent.pros?.length||sent.cons?.length)?`<div class="two" style="margin:16px 0"><div><b style="color:var(--olive)">Loved</b><ul>${(sent.pros||[]).slice(0,5).map(p=>`<li>${esc(p)}</li>`).join('')}</ul></div><div><b style="color:var(--terra)">Could be better</b><ul>${(sent.cons||[]).slice(0,5).map(p=>`<li>${esc(p)}</li>`).join('')}</ul></div></div>`:''}
+          ${r.reviews?.length?r.reviews.map(v=>`<div class="rv"><div class="h"><b>${esc(v.headline||'Guest review')}</b>${v.score!=null?`<span class="chip">${esc(v.score)}</span>`:''}</div>
+            <div class="mute">${esc(v.name)}${v.country?' · '+esc(v.country.toUpperCase()):''}${v.type?' · '+esc(v.type):''}${v.date?' · '+esc(fmtD(v.date)):''}</div>
+            ${v.pros?`<p style="margin:8px 0 0">👍 ${esc(v.pros)}</p>`:''}${v.cons?`<p style="margin:6px 0 0">👎 ${esc(v.cons)}</p>`:''}</div>`).join(''):'<p class="mute">No reviews available for this hotel yet.</p>'}
+        </div>
+      </div>
+      <div>
+        <div class="facts">
+          ${sc?`<div class="row"><span>Guest score</span><b>${(+sc).toFixed(1)} · ${scoreWord(+sc)}</b></div>`:''}
+          <div class="row"><span>From</span><b>${money(h.from,h.currency)} total</b></div>
+          ${d.checkin?`<div class="row"><span>Check-in</span><b>${esc(d.checkin)}</b></div>`:''}${d.checkout?`<div class="row"><span>Check-out</span><b>${esc(d.checkout)}</b></div>`:''}
+          <div class="row"><span>Your stay</span><b>${nights()} nights · ${guests()} guests</b></div>
+        </div>
+        ${(h.lat||d.lat)?`<div class="mapbox"><iframe loading="lazy" title="Map" src="https://www.openstreetmap.org/export/embed.html?bbox=${(+(h.lng||d.lng))-.01},${(+(h.lat||d.lat))-.006},${(+(h.lng||d.lng))+.01},${(+(h.lat||d.lat))+.006}&layer=mapnik&marker=${h.lat||d.lat},${h.lng||d.lng}"></iframe></div>`:''}
+        <button class="btn" style="width:100%;margin-top:14px" onclick="document.querySelector('[data-mt=rooms]').click();document.querySelector('.mtabs').scrollIntoView({behavior:'smooth'})">Choose a room</button>
+      </div>
+    </div>`;
+  S.details[id].imgs = imgs;
+  $('gal').onclick = e => { const t=e.target.closest('[data-img]'); if(t && imgs[+t.dataset.img]) openGallery(imgs, +t.dataset.img, h.name); };
+  if ($('galAll')) $('galAll').onclick = () => openGallery(imgs, 0, h.name);
+  document.querySelector('.mtabs').onclick = e => { const b=e.target.closest('[data-mt]'); if(!b) return;
+    document.querySelectorAll('[data-mt]').forEach(x=>x.classList.toggle('on',x===b)); document.querySelectorAll('[data-mp]').forEach(p=>p.classList.toggle('hidden',p.dataset.mp!==b.dataset.mt)); };
+}
+
+
+/* ================= room details (photos, beds, size, amenities, description) ================= */
+function roomDetails(hid, rid, oid){
+  const h=S.hotels.find(x=>x.hotelId===hid); const m=S.details[hid]?.d?.rooms?.find(r=>r.id===rid); if(!m) return;
+  const o=h?.offers.find(x=>x.offerId===oid); const ph=m.photos?.length?m.photos:(m.photo?[m.photo]:[]);
+  const ov=document.createElement('div'); ov.className='rov';
+  ov.innerHTML=`<div class="rbox"><button class="x" aria-label="Close">×</button>
+    ${ph.length?`<div class="rgal">${[0,1,2].map(i=>`<div data-i="${i}" style="background-image:url('${esc(ph[i]||ph[0])}')"></div>`).join('')}</div>`:''}
+    <div class="rc"><div class="eyebrow">${esc(h?.name||'')}</div><h3>${esc(m.name)}</h3>
+      ${o&&o.room.trim()!==m.name.trim()?`<div class="mute">Sold as “${esc(o.room)}”</div>`:''}
+      <div class="kv">
+        <b>Beds</b><span>${esc((m.beds||[]).join(', ')||'Not specified')}</span>
+        <b>Size</b><span>${esc(m.size||'Not specified')}</span>
+        <b>Max guests</b><span>${esc(m.maxOccupancy||'Not specified')}</span>
+        <b>Photos</b><span>${ph.length}${ph.length?' · <button class="link" id="rdAll" style="padding:0">view all</button>':''}</span>
+      </div>
+      <b style="font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)">In this room</b>
+      ${(m.amenities||[]).length?`<div class="amen">${m.amenities.map(a=>`<span class="chip o">${esc(a)}</span>`).join('')}</div>`:'<p class="mute" style="margin:6px 0">No amenities listed for this room.</p>'}
+      <p style="margin-top:14px">${esc(m.description)||'<span class="mute">No description available.</span>'}</p>
+      ${o?`<div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;border-top:1px solid var(--line);padding-top:14px"><div class="pr" style="text-align:left"><b>${money(o.price,o.currency)}</b><small>total · ${o.board||''}</small></div><button class="btn" id="rdSel">Select this room</button></div>`:''}
+    </div></div>`;
+  document.body.appendChild(ov);
+  const close=()=>{ ov.remove(); document.removeEventListener('keydown',k); };
+  const k=e=>{ if(e.key==='Escape'&&!window.galleryOpen?.()){ e.stopImmediatePropagation(); close(); } };
+  document.addEventListener('keydown',k,true);
+  ov.querySelector('.x').onclick=close; ov.onclick=e=>{ if(e.target===ov) close(); };
+  ov.querySelectorAll('.rgal [data-i]').forEach(el=>el.onclick=()=>openGallery(ph,+el.dataset.i,m.name));
+  if($('rdAll')) $('rdAll').onclick=()=>openGallery(ph,0,m.name);
+  if($('rdSel')) $('rdSel').onclick=()=>{ close(); select(h,o); };
+}
+
+/* ================= checkout ================= */
+function select(h, o){
+  const fromModal = !!history.state?.modal; closeModal(true); S.sel={h,o}; const n=nights();
+  $('ckImg').style.backgroundImage=`url('${h.photo}')`; $('ckImg').style.cursor='zoom-in';
+  $('ckImg').onclick = () => openGallery(S.details[h.hotelId]?.imgs || [h.photo], 0, h.name); $('ckStars').textContent=h.stars?'★'.repeat(Math.round(h.stars)):''; $('ckTitle').textContent=h.name;
+  drawSummary(o.price, o.currency);
+  $('payment').innerHTML=''; $('checkRes').innerHTML=''; $('pay').disabled=false; $('pay').classList.remove('hidden'); $('sbNote').classList.add('hidden'); $('st2').classList.remove('on');
+  const g=store.get('guest',{}); ['fn','ln','em'].forEach(k=>{ if(g[k]&&!$(k).value) $(k).value=g[k]; });
+  view('vCheckout', fromModal ? 'replace' : 'push');   // back from checkout returns to the results
+}
+function drawSummary(price, cur, extra=''){
+  const {h,o}=S.sel, n=nights();
+  $('ckSum').innerHTML = `
+    <div class="ln2"><span>Room</span><span style="text-align:right">${esc(o.room)}${S.rooms.length>1?` × ${S.rooms.length}`:''}</span></div>
+    ${o.board?`<div class="ln2"><span>Board</span><span>${esc(o.board)}</span></div>`:''}
+    <div class="ln2"><span>Check-in</span><span>${fmtD($('ci').value)}</span></div>
+    <div class="ln2"><span>Check-out</span><span>${fmtD($('co').value)}</span></div>
+    <div class="ln2"><span>Guests</span><span>${guests()} · ${n} night${n>1?'s':''}</span></div>
+    <div class="ln2"><span>Cancellation</span><span>${o.refundable?'Free'+(o.freeUntil?' until '+fmtD(o.freeUntil):''):'Non-refundable'}</span></div>
+    ${extra}
+    <div class="ln2 tot"><span>Total</span><span>${money(price,cur)}</span></div>
+    ${o.payAtHotel?`<div class="mute">Plus ${money(o.payAtHotel,o.currency)} in local taxes/fees paid at the hotel.</div>`:'<div class="mute">Taxes and fees included.</div>'}`;
+}
+$('back').onclick = e => { e.preventDefault(); history.state?.v==='vCheckout' && S.hotels.length ? history.back() : view('vResults'); };
+
+$('pay').addEventListener('click', async () => {
+  const g={firstName:$('fn').value.trim(), lastName:$('ln').value.trim(), email:$('em').value.trim()};
+  if (!g.firstName||!g.lastName||!/^\S+@\S+\.\S+$/.test(g.email)) return toast('Please enter your name and a valid email.');
+  store.set('guest',{fn:g.firstName,ln:g.lastName,em:g.email});
+  $('pay').disabled=true; $('checkRes').innerHTML='<div class="note">Checking the latest price and locking your room…</div>';
+  try {
+    const pb = await api('/api/prebook', {offerId:S.sel.o.offerId, voucherCode:$('voucher').value.trim()||undefined});
+    const changed = Math.abs(pb.priceDifferencePercent||0) > 0.01;
+    let msg = changed ? `<div class="note warn">The hotel updated the price by ${(+pb.priceDifferencePercent).toFixed(1)}%. New total: <b>${money(pb.price,pb.currency)}</b>.</div>`
+                      : `<div class="note ok">✓ Price confirmed and held for you: <b>${money(pb.price,pb.currency)}</b>.</div>`;
+    if (pb.cancellationChanged) msg += '<div class="note warn">The cancellation terms changed. Please review them below.</div>';
+    if (pb.voucherTotalAmount) msg += `<div class="note ok">Voucher applied: −${money(pb.voucherTotalAmount,pb.currency)}</div>`;
+    if (pb.cancelPolicies?.length) msg += `<div class="mt"><b>Cancellation timeline</b><div class="timeline">${pb.cancelPolicies.map(c=>`<div class="${+c.amount>0?'p':''}">${+c.amount>0?`From ${esc(fmtDT(c.until))}: fee ${money(c.amount,c.currency)}`:`Free until ${esc(fmtDT(c.until))}`}</div>`).join('')}</div></div>`;
+    if (pb.remarks) msg += `<div class="note">${esc(pb.remarks)}</div>`;
+    $('checkRes').innerHTML = msg;
+    drawSummary(pb.price, pb.currency, pb.voucherTotalAmount?`<div class="ln2"><span>Voucher</span><span>−${money(pb.voucherTotalAmount,pb.currency)}</span></div>`:'');
+    sessionStorage.setItem('px', JSON.stringify({...g, rooms:S.rooms.length, prebookId:pb.prebookId, transactionId:pb.transactionId,
+      hotel:S.sel.h.name, photo:S.sel.h.photo, room:S.sel.o.room, ci:$('ci').value, co:$('co').value}));
+    $('pay').classList.add('hidden'); $('st2').classList.add('on');
+    $('sbNote').classList.toggle('hidden', !S.cfg.sandbox);
+    $('payment').innerHTML = '<div id="targetElement"></div>';
+    new LiteAPIPayment({ publicKey: S.cfg.sandbox?'sandbox':'live', secretKey: pb.secretKey,
+      returnUrl: `${location.origin}/?pb=${encodeURIComponent(pb.prebookId)}&tx=${encodeURIComponent(pb.transactionId)}`,
+      targetElement:'#targetElement', appearance:{theme:'flat'}, options:{business:{name:'KostasTravel'}} }).handlePayment();
+  } catch(err){ $('checkRes').innerHTML=`<div class="note warn">${esc(err.message)}</div>`; $('pay').disabled=false; }
+});
+
+/* ================= return from payment → book ================= */
+(async () => {
+  const p=new URLSearchParams(location.search); if (!p.get('pb')) return view('vHome','replace');
+  view('vDone','replace'); $('done').innerHTML='<div class="seal">…</div><h2>Confirming your booking</h2><p class="mute">This takes a few seconds.</p>';
+  const s=JSON.parse(sessionStorage.getItem('px')||'{}');
+  try {
+    const b=await api('/api/book', {...s, prebookId:p.get('pb'), transactionId:p.get('tx')});
+    $('done').innerHTML = `<div class="seal">✓</div><div class="eyebrow">Ευχαριστούμε · Thank you</div><h2 style="font-size:40px;margin:8px 0">You're all set, ${esc(s.firstName||'')}.</h2>
+      <p>${esc(s.hotel||b.hotel)} · ${esc(s.room||'')}<br>${esc(fmtD(s.ci||b.checkin))} – ${esc(fmtD(s.co||b.checkout))}</p>
+      <div style="text-align:left;max-width:440px;margin:20px auto">
+        <div class="ln2"><span>Booking ID</span><b>${esc(b.bookingId)}</b></div>
+        <div class="ln2"><span>Hotel confirmation</span><b>${esc(b.hotelConfirmationCode||'Pending')}</b></div>
+        <div class="ln2"><span>Your reference</span><b>${esc(b.clientReference||'')}</b></div>
+        <div class="ln2"><span>Status</span><b>${esc(b.status||'')}</b></div>
+        ${b.price?`<div class="ln2 tot"><span>Paid</span><span>${money(b.price,b.currency)}</span></div>`:''}
+      </div>
+      <p class="mute">A confirmation is on its way to ${esc(s.email||'')}. Save your booking ID to manage or cancel.</p>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><a class="btn" href="/">New search</a><button class="btn ghost" id="toManage">Manage this booking</button></div>`;
+    $('toManage').onclick = () => { $('mId').value=b.bookingId; $('mEm').value=s.email||''; view('vManage'); $('mFind').click(); };
+    sessionStorage.removeItem('px'); history.replaceState({},'','/');
+  } catch(err){ $('done').innerHTML=`<div class="seal" style="background:var(--terra)">!</div><h2>We couldn't complete the booking</h2><p>${esc(err.message)}</p><p class="mute">If you were charged, contact support with this reference: ${esc(p.get('pb'))}</p><a class="btn" href="/">Back to search</a>`; }
+})();
+
+/* ================= manage booking ================= */
+$('mFind').onclick = async () => {
+  const id=$('mId').value.trim(), em=$('mEm').value.trim(); if(!id||!em) return toast('Enter your booking ID and email.');
+  $('mFind').disabled=true; $('mOut').innerHTML='<div class="note">Looking up your booking…</div>';
+  try {
+    const b=await api('/api/my-booking',{bookingId:id,email:em}); const cancelled=/cancel/i.test(b.status||'');
+    $('mOut').innerHTML = `<div class="mt">
+      <h3 style="font-size:28px;margin:10px 0 4px">${esc(b.hotel)}</h3><span class="chip ${cancelled?'t':'g'}">${esc(b.status)}</span>
+      <div class="mt">
+        <div class="ln2"><span>Dates</span><span>${esc(fmtD(b.checkin))} – ${esc(fmtD(b.checkout))}</span></div>
+        ${(b.rooms||[]).map((r,i)=>`<div class="ln2"><span>Room ${i+1}</span><span>${esc(r.name)} · ${esc(r.adults)} adults${r.children?` · ${esc(r.children)} children`:''}</span></div>`).join('')}
+        <div class="ln2"><span>Hotel confirmation</span><span>${esc(b.hotelConfirmationCode||'Pending')}</span></div>
+        <div class="ln2"><span>Total</span><b>${money(b.price,b.currency)}</b></div>
+      </div>
+      ${b.cancelPolicies?.length?`<div class="mt"><b>Cancellation timeline</b><div class="timeline">${b.cancelPolicies.map(c=>`<div class="${+c.amount>0?'p':''}">${+c.amount>0?`From ${esc(fmtDT(c.until))}: fee ${money(c.amount,c.currency)}`:`Free until ${esc(fmtDT(c.until))}`}</div>`).join('')}</div></div>`:''}
+      ${!cancelled?`<button class="btn danger mt" id="mCancel">Cancel booking</button>`:''}</div>`;
+    if ($('mCancel')) $('mCancel').onclick = async () => {
+      if (!confirm(b.refundable?'Cancel this booking? Check the cancellation timeline above for any fee.':'This rate is non-refundable. Cancel anyway?')) return;
+      $('mCancel').disabled=true;
+      try { const c=await api('/api/my-booking/cancel',{bookingId:id,email:em}); toast('Booking cancelled'); $('mOut').insertAdjacentHTML('beforeend',`<div class="note ok">Cancelled. Status: ${esc(c.status)}${c.refund!=null?` · Refund: ${money(c.refund,c.currency||b.currency)}`:''}</div>`); $('mCancel').remove(); }
+      catch(err){ toast(err.message); $('mCancel').disabled=false; }
+    };
+  } catch(err){ $('mOut').innerHTML=`<div class="note warn">${esc(err.message)}</div>`; }
+  $('mFind').disabled=false;
+};
+</script>
+</body>
+</html>
