@@ -194,6 +194,16 @@ footer a{display:block;text-decoration:none;opacity:.8;padding:3px 0;cursor:poin
 footer .bottom{border-top:1px solid rgba(255,255,255,.1);padding-top:20px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:12px;opacity:.7}
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:90;background:var(--deep);color:#fff;padding:12px 18px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.3);font-size:14px;max-width:90vw}
 
+
+.rdl{font-size:12px;padding:2px 0;margin-top:2px}
+.rov{position:fixed;inset:0;z-index:120;background:rgba(6,22,44,.55);display:flex;justify-content:center;align-items:flex-start;overflow:auto;padding:30px 12px}
+.rbox{background:#fff;border-radius:20px;width:min(640px,100%);overflow:hidden;position:relative;animation:up .2s ease}
+.rbox .rgal{display:grid;grid-template-columns:2fr 1fr;grid-template-rows:130px 130px;gap:4px}
+.rbox .rgal div{background:var(--foam) center/cover;cursor:zoom-in}.rbox .rgal div:first-child{grid-row:span 2}
+.rbox .rc{padding:22px 24px 26px}.rbox h3{font-size:28px;margin:0 0 4px}
+.rbox .kv{display:grid;grid-template-columns:110px 1fr;gap:6px 10px;font-size:14px;margin:14px 0}
+.rbox .kv b{color:var(--mute);font-weight:600}
+.rbox .amen{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 /* ---------- MOBILE ---------- */
 @media(max-width:960px){
   .grid5{grid-template-columns:1fr 1fr}.f{border-right:0;border-bottom:1px solid var(--line)}.f.wide{grid-column:1/-1}
@@ -641,7 +651,7 @@ function offerRow(o, h){
   const mr = o.mappedRoomId ? S.details[h.hotelId]?.d?.rooms?.find(r=>r.id===o.mappedRoomId) : null; // matched via room mapping
   const rp = mr?.photos?.[0] || mr?.photo;
   const facts = mr ? [...(mr.beds||[]), mr.size, mr.maxOccupancy?`max ${mr.maxOccupancy} guests`:''].filter(Boolean).join(' · ') : '';
-  return `<div class="offer"><div style="display:flex;gap:12px;align-items:center">${rp?`<button type="button" class="rph" data-rg="${esc(h.hotelId)}|${esc(mr.id)}" title="See photos of this room" style="background-image:url('${esc(rp)}')">${(mr.photos||[]).length>1?`<span>📷 ${mr.photos.length}</span>`:''}</button>`:''}<div><div class="rn">${esc(o.room)}</div>${facts?`<div class="mute" style="font-size:12px">${esc(facts)}</div>`:''}<div class="meta">
+  return `<div class="offer"><div style="display:flex;gap:12px;align-items:center">${rp?`<button type="button" class="rph" data-rg="${esc(h.hotelId)}|${esc(mr.id)}" title="See photos of this room" style="background-image:url('${esc(rp)}')">${(mr.photos||[]).length>1?`<span>📷 ${mr.photos.length}</span>`:''}</button>`:''}<div><div class="rn">${esc(o.room)}</div>${facts?`<div class="mute" style="font-size:12px">${esc(facts)}</div>`:''}${mr?`<button type="button" class="link rdl" data-rd="${esc(h.hotelId)}|${esc(mr.id)}|${esc(o.offerId)}">Room details</button>`:''}<div class="meta">
       ${o.refundable?`<span class="chip g">✓ Free cancellation${o.freeUntil?' until '+esc(fmtD(o.freeUntil)):''}</span>`:'<span class="chip t">Non-refundable</span>'}
       ${o.board?`<span class="chip o">${esc(o.board)}</span>`:''}${o.payAtHotel?`<span class="chip o">+${money(o.payAtHotel,o.currency)} at hotel</span>`:''}</div></div></div>
     <div style="display:flex;align-items:center"><div class="pr"><b>${money(o.price,o.currency)}</b><small>${money(o.price/n,o.currency)} / night</small></div>
@@ -668,6 +678,7 @@ function render(){
 /* ================= hotel details modal ================= */
 document.addEventListener('click', e => {
   const g=e.target.closest('[data-rg]'); if (g) { const [hid,rid]=g.dataset.rg.split('|'); const rm=S.details[hid]?.d?.rooms?.find(r=>r.id===rid); if (rm) openGallery(rm.photos?.length?rm.photos:[rm.photo], 0, rm.name); return; }
+  const rd=e.target.closest('[data-rd]'); if (rd) { const [hid,rid,oid]=rd.dataset.rd.split('|'); return roomDetails(hid,rid,oid); }
   const o=e.target.closest('[data-open]'); if (o) return openHotel(o.dataset.open);
   const s=e.target.closest('[data-sel]'); if (s){ const [hid,oid]=s.dataset.sel.split('|'); const h=S.hotels.find(x=>x.hotelId===hid); select(h, h.offers.find(x=>x.offerId===oid)); }
 });
@@ -687,6 +698,13 @@ async function openHotel(id, push=true){
   if (!S.details[id]) {
     const [d, r] = await Promise.all([api('/api/hotel/'+encodeURIComponent(id)).catch(()=>({})), api('/api/reviews/'+encodeURIComponent(id)).catch(()=>({reviews:[],sentiment:{}}))]);
     S.details[id] = {d, r};
+  }
+  if (!S.details[id].full) {   // a city-wide search can return only some room types; ask for this hotel alone
+    S.details[id].full = true;
+    try {
+      const fresh = await api('/api/rates', {hotelIds:[id], checkin:$('ci').value, checkout:$('co').value, rooms:S.rooms, currency:S.cur, nationality:S.nat});
+      if (fresh[0]?.offers?.length > h.offers.length) { h.offers = fresh[0].offers; h.from = fresh[0].from; render(); }
+    } catch {}
   }
   const {d, r} = S.details[id]; const imgs=[...new Set([h.photo,...(d.images||[])].filter(Boolean))];
   const shown = h.offers; const sc=h.score||d.score; const sent=r.sentiment||{};
@@ -729,6 +747,37 @@ async function openHotel(id, push=true){
   if ($('galAll')) $('galAll').onclick = () => openGallery(imgs, 0, h.name);
   document.querySelector('.mtabs').onclick = e => { const b=e.target.closest('[data-mt]'); if(!b) return;
     document.querySelectorAll('[data-mt]').forEach(x=>x.classList.toggle('on',x===b)); document.querySelectorAll('[data-mp]').forEach(p=>p.classList.toggle('hidden',p.dataset.mp!==b.dataset.mt)); };
+}
+
+
+/* ================= room details (photos, beds, size, amenities, description) ================= */
+function roomDetails(hid, rid, oid){
+  const h=S.hotels.find(x=>x.hotelId===hid); const m=S.details[hid]?.d?.rooms?.find(r=>r.id===rid); if(!m) return;
+  const o=h?.offers.find(x=>x.offerId===oid); const ph=m.photos?.length?m.photos:(m.photo?[m.photo]:[]);
+  const ov=document.createElement('div'); ov.className='rov';
+  ov.innerHTML=`<div class="rbox"><button class="x" aria-label="Close">×</button>
+    ${ph.length?`<div class="rgal">${[0,1,2].map(i=>`<div data-i="${i}" style="background-image:url('${esc(ph[i]||ph[0])}')"></div>`).join('')}</div>`:''}
+    <div class="rc"><div class="eyebrow">${esc(h?.name||'')}</div><h3>${esc(m.name)}</h3>
+      ${o&&o.room.trim()!==m.name.trim()?`<div class="mute">Sold as “${esc(o.room)}”</div>`:''}
+      <div class="kv">
+        <b>Beds</b><span>${esc((m.beds||[]).join(', ')||'Not specified')}</span>
+        <b>Size</b><span>${esc(m.size||'Not specified')}</span>
+        <b>Max guests</b><span>${esc(m.maxOccupancy||'Not specified')}</span>
+        <b>Photos</b><span>${ph.length}${ph.length?' · <button class="link" id="rdAll" style="padding:0">view all</button>':''}</span>
+      </div>
+      <b style="font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)">In this room</b>
+      ${(m.amenities||[]).length?`<div class="amen">${m.amenities.map(a=>`<span class="chip o">${esc(a)}</span>`).join('')}</div>`:'<p class="mute" style="margin:6px 0">No amenities listed for this room.</p>'}
+      <p style="margin-top:14px">${esc(m.description)||'<span class="mute">No description available.</span>'}</p>
+      ${o?`<div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;border-top:1px solid var(--line);padding-top:14px"><div class="pr" style="text-align:left"><b>${money(o.price,o.currency)}</b><small>total · ${o.board||''}</small></div><button class="btn" id="rdSel">Select this room</button></div>`:''}
+    </div></div>`;
+  document.body.appendChild(ov);
+  const close=()=>{ ov.remove(); document.removeEventListener('keydown',k); };
+  const k=e=>{ if(e.key==='Escape'&&!window.galleryOpen?.()){ e.stopImmediatePropagation(); close(); } };
+  document.addEventListener('keydown',k,true);
+  ov.querySelector('.x').onclick=close; ov.onclick=e=>{ if(e.target===ov) close(); };
+  ov.querySelectorAll('.rgal [data-i]').forEach(el=>el.onclick=()=>openGallery(ph,+el.dataset.i,m.name));
+  if($('rdAll')) $('rdAll').onclick=()=>openGallery(ph,0,m.name);
+  if($('rdSel')) $('rdSel').onclick=()=>{ close(); select(h,o); };
 }
 
 /* ================= checkout ================= */
