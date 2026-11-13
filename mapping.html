@@ -23,7 +23,7 @@ h2{font:600 30px 'Cormorant Garamond',serif;margin:0 0 6px}h3{margin:0 0 6px;fon
 .in{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;margin-top:4px}
 .btn{background:var(--aegean);color:#fff;border:0;border-radius:10px;padding:12px 18px;font-weight:700;cursor:pointer;white-space:nowrap}.btn:hover{background:var(--deep)}.btn:disabled{opacity:.5}
 .btn.ghost{background:#fff;color:var(--aegean);border:1.5px solid var(--aegean)}
-.ac{position:relative}#sug{position:absolute;z-index:10;top:100%;left:0;right:0;background:#fff;border-radius:10px;box-shadow:0 14px 30px rgba(0,0,0,.15);list-style:none;margin:4px 0;padding:6px}
+.ac{position:relative}#hsug{position:absolute;z-index:10;top:100%;left:0;right:0;background:#fff;border-radius:10px;box-shadow:0 14px 30px rgba(0,0,0,.15);list-style:none;margin:4px 0;padding:6px;max-height:300px;overflow:auto}#hsug li{padding:8px 10px;border-radius:8px;cursor:pointer}#hsug li[data-id]:hover{background:var(--foam)}#sug{position:absolute;z-index:10;top:100%;left:0;right:0;background:#fff;border-radius:10px;box-shadow:0 14px 30px rgba(0,0,0,.15);list-style:none;margin:4px 0;padding:6px}
 #sug li{padding:8px 10px;border-radius:8px;cursor:pointer}#sug li:hover{background:var(--foam)}
 .tabs{display:flex;gap:6px;margin:0 0 14px}.tabs button{border:0;background:#fff;padding:10px 16px;border-radius:10px;font-weight:700;color:var(--mute);cursor:pointer;box-shadow:0 2px 8px rgba(11,34,64,.06)}
 .tabs button.on{background:var(--aegean);color:#fff}
@@ -144,15 +144,15 @@ tbody tr:hover{background:var(--foam)}td.num,th.num{text-align:right}
 <div class="w">
   <div class="intro">
     <div class="card">
-      <div class="eyebrow">Mapping &amp; Content</div><h2>One physical room, many supplier names</h2>
-      <p class="mute" style="font-size:14px">Every supplier rate comes back with its own room name. With <code>roomMapping: true</code>, LiteAPI adds a <code>mappedRoomId</code> that points to one master room in the hotel's content. This page shows that resolution live: which supplier names were mapped to which master room, what stayed unmapped, and where the mapping might be wrong.</p>
+      <div class="eyebrow">Mapping &amp; Content</div><h2>Room mapping explorer</h2>
+      <p class="mute" style="font-size:14px">Every supplier rate comes back with its own room name. With <code>roomMapping: true</code>, LiteAPI adds a <code>mappedRoomId</code> that points to one master room in the hotel's content. This page shows that resolution live for any hotel: which supplier names map to which master room, which master rooms have live rates, and how the room content compares.</p>
     </div>
     <div class="card">
       <h3>How to read it</h3>
       <div class="mute">
         <b>Rate coverage</b>: share of supplier rates carrying a <code>mappedRoomId</code>.<br>
         <b>Name variants</b>: distinct supplier names resolved into the same master room.<br>
-        <b>Check flags</b>: a simple keyword heuristic of mine (bed type, room class, view), not Nuitee's logic. A flag means "worth a human look", not "wrong".
+        <b>Master rooms</b>: the hotel's room records in the content catalogue, with photos, beds, size and amenities.
       </div>
     </div>
   </div>
@@ -165,7 +165,7 @@ tbody tr:hover{background:var(--foam)}td.num,th.num{text-align:right}
       <div><label>Adults</label><input class="in" type="number" id="ad" value="2" min="1" max="6"></div>
       <button class="btn" id="scanBtn">Scan destination</button>
     </div>
-    <div class="row" style="margin-top:12px"><span class="mute">Or inspect one hotel directly:</span><input class="in" id="hid" placeholder="Hotel ID (e.g. lp1a2b3)" style="width:220px;margin:0"><button class="btn ghost" id="hotelBtn">Inspect hotel</button></div>
+    <div class="row" style="margin-top:12px"><span class="mute">Or open one hotel:</span><div class="ac" style="width:min(340px,100%)"><input class="in" id="hname" placeholder="Hotel name, e.g. PURO" autocomplete="off" style="margin:0"><ul id="hsug" class="hidden"></ul></div><input type="hidden" id="hid"><button class="btn ghost" id="hotelBtn">Inspect hotel</button><span class="mute" id="hmsg"></span></div>
   </div>
 
   <div class="tabs" style="margin-top:22px"><button class="on" data-t="scan">Destination scan</button><button data-t="hotel">Hotel inspector</button></div>
@@ -176,7 +176,7 @@ tbody tr:hover{background:var(--foam)}td.num,th.num{text-align:right}
   </section>
 
   <section id="tHotel" class="hidden"><div id="hotelOut"><div class="card empty">Click a hotel in the scan, or enter a hotel ID above.</div></div></section>
-  <p class="mute" style="margin:30px 0">Data: live Nuitee LiteAPI responses (<code>/hotels/rates</code> with <code>roomMapping</code>, <code>/data/hotel</code> rooms). Opportunity scores and check flags are this page's own heuristics.</p>
+  <p class="mute" style="margin:30px 0">Data: live Nuitee LiteAPI responses (<code>/hotels/rates</code> with <code>roomMapping</code>, <code>/data/hotel</code> rooms).</p>
 </div>
 
 <script>
@@ -207,7 +207,7 @@ function tab(t, push=true, id){
 let tm; $('dest').oninput=e=>{placeId=null;clearTimeout(tm);const q=e.target.value.trim();if(q.length<2)return $('sug').classList.add('hidden');
   tm=setTimeout(async()=>{const l=await api('/api/places?q='+encodeURIComponent(q)).catch(()=>[]);
   $('sug').innerHTML=l.slice(0,7).map(p=>`<li data-id="${esc(p.placeId)}" data-n="${esc(p.displayName)}"><b>${esc(p.displayName)}</b> <span class="mute">${esc(p.formattedAddress||'')}</span></li>`).join('');$('sug').classList.toggle('hidden',!l.length);},220);};
-$('sug').onmousedown=e=>{const li=e.target.closest('li');if(!li)return;e.preventDefault();placeId=li.dataset.id;$('dest').value=li.dataset.n;$('sug').classList.add('hidden');};
+$('sug').onmousedown=e=>{const li=e.target.closest('li');if(!li)return;e.preventDefault();placeId=li.dataset.id;$('dest').value=li.dataset.n;$('sug').classList.add('hidden');$('hmsg').textContent='';loadHotels();};
 $('dest').onblur=()=>setTimeout(()=>$('sug').classList.add('hidden'),150);
 const q=()=>({checkin:$('ci').value,checkout:$('co').value,adults:$('ad').value,nationality:'PL',currency:'EUR'}); // same guest profile as the cheat-sheet numbers
 
@@ -235,7 +235,7 @@ function drawScan(){
   const list=[...scan].sort((a,b)=>((a[sortK]>b[sortK])-(a[sortK]<b[sortK]))*sortD);
   const th=(k,t,c='')=>`<th class="${c}" data-k="${k}">${t}${sortK===k?(sortD<0?' ↓':' ↑'):''}</th>`;
   $('scanOut').innerHTML=`<div class="row" style="justify-content:space-between"><h3>Coverage by hotel</h3><button class="btn ghost" id="csvScan">Export CSV</button></div>
-    <div class="legend"><b>Opportunity</b> = unmapped rates × the hotel's median rate price. It's a rough proxy for where better mapping would unlock the most bookable value, so sort by it to decide which hotels to look at first.</div>
+    <div class="legend"><b>Opportunity</b> = unmapped rates × the hotel's median rate price.</div>
     <div class="tw"><table><thead><tr>${th('name','Hotel')}${th('cov','Rate coverage')}${th('rates','Rates','num')}${th('names','Supplier names','num')}${th('masterRooms','Master rooms hit','num')}${th('unmappedNames','Unmapped names','num')}${th('opp','Opportunity','num')}<th></th></tr></thead>
     <tbody>${list.map(h=>`<tr><td><b>${esc(h.name)}</b><div class="mute">${esc(h.hotelId)}${h.stars?' · '+'★'.repeat(Math.round(h.stars)):''}</div></td>
       <td><span class="barw"><i style="width:${h.cov}%;background:${col(h.cov)}"></i></span>${h.cov}%</td>
@@ -248,7 +248,44 @@ function drawScan(){
 }
 
 /* ===== hotel inspector ===== */
-$('hotelBtn').onclick=()=>{ const id=$('hid').value.trim(); if(!id) return alert('Enter a hotel ID.'); inspect(id); };
+/* hotel search by name: uses the hotels with live rates for the chosen destination + dates */
+const fold=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/ł/g,'l');
+let HOT={key:'',list:[],p:null};
+const hkey=()=>[placeId,$('ci').value,$('co').value,$('ad').value].join('|');
+function loadHotels(){
+  if(!placeId) return Promise.resolve([]);
+  const k=hkey(); if(HOT.key===k&&(HOT.list.length||HOT.p)) return HOT.p||Promise.resolve(HOT.list);
+  HOT={key:k,list:[],p:null}; $('hmsg').textContent='Loading hotels…';
+  HOT.p=api('/api/rates',{placeId,checkin:$('ci').value,checkout:$('co').value,rooms:[{adults:+$('ad').value||2,children:[]}],currency:'EUR',nationality:'PL'})
+    .then(l=>{ if(HOT.key===k){ HOT.list=l.map(h=>({id:h.hotelId,name:h.name,address:h.address})); HOT.p=null; $('hmsg').textContent=''; } return HOT.list; })
+    .catch(e=>{ HOT.p=null; $('hmsg').textContent=e.message; return []; });
+  return HOT.p;
+}
+const matches=q=>{ const f=fold(q).trim(); if(!f) return []; return HOT.list.filter(h=>fold(h.name).includes(f)).slice(0,8); };
+async function showHotelSug(){
+  const q=$('hname').value;
+  if(!placeId){ $('hmsg').textContent='Pick a destination first.'; return $('hsug').classList.add('hidden'); }
+  if(q.trim().length<2) return $('hsug').classList.add('hidden');
+  await loadHotels(); if($('hname').value!==q) return;
+  const m=matches(q);
+  $('hsug').innerHTML=m.length?m.map(h=>`<li data-id="${esc(h.id)}" data-n="${esc(h.name)}"><b>${esc(h.name)}</b> <span class="mute">${esc(h.address||'')}</span></li>`).join(''):'<li class="mute" style="cursor:default">No hotel with live rates matches that name</li>';
+  $('hsug').classList.remove('hidden');
+}
+let th; $('hname').oninput=()=>{ $('hid').value=''; clearTimeout(th); th=setTimeout(showHotelSug,200); };
+$('hname').onfocus=()=>{ if(placeId) loadHotels(); };
+$('hname').onblur=()=>setTimeout(()=>$('hsug').classList.add('hidden'),150);
+$('hsug').onmousedown=e=>{ const li=e.target.closest('li[data-id]'); if(!li) return; e.preventDefault(); clearTimeout(th); $('hname').value=li.dataset.n; $('hid').value=li.dataset.id; $('hsug').classList.add('hidden'); inspect(li.dataset.id); };
+$('hname').onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); $('hotelBtn').click(); } };
+$('hotelBtn').onclick=async()=>{
+  clearTimeout(th); $('hsug').classList.add('hidden');
+  const q=$('hname').value.trim(); if($('hid').value) return inspect($('hid').value);
+  if(/^lp[0-9a-z]+$/i.test(q)) return inspect(q);
+  if(!placeId) return alert('Pick a destination first, then type the hotel name.');
+  if(!q) return alert('Type a hotel name.');
+  await loadHotels(); const m=matches(q);
+  if(m.length===1) { $('hname').value=m[0].name; return inspect(m[0].id); }
+  showHotelSug();
+};
 const GROUPS={
   bed:['king','queen','double','twin','single','triple','quadruple','bunk','sofa bed'],
   class:['suite','junior suite','studio','apartment','villa','cave','family','dormitory','penthouse','bungalow','maisonette'],
@@ -263,7 +300,7 @@ function flagsFor(supplier, master){
 }
 async function inspect(id, push=true){
   CMP.clear();
-  tab('hotel', push, id); $('hid').value=id; $('hotelOut').innerHTML='<div class="skel"></div><div class="skel"></div><div class="skel"></div>';
+  tab('hotel', push, id); $('hid').value=id; const hh=HOT.list.find(x=>x.id===id); if(hh) $('hname').value=hh.name; $('hotelOut').innerHTML='<div class="skel"></div><div class="skel"></div><div class="skel"></div>';
   try{ lastHotel=await api('/api/mapping/hotel',{hotelId:id,...q()}); drawHotel(); }
   catch(e){ $('hotelOut').innerHTML=`<div class="card empty">${esc(e.message)}</div>`; }
 }
@@ -303,12 +340,12 @@ function drawHotel(){
     </div>
     ${!RT.length?'<div class="card empty">No rates for these dates. Try other dates.</div>':''}
     ${roomCards}
-    ${unm.length?`<div class="card" style="margin-bottom:16px"><h3 style="color:var(--terra)">Unmapped supplier names (${unm.length} rates)</h3><p class="mute">These rates came back without a <code>mappedRoomId</code>, so a guest sees the raw supplier name and no room photos.</p>
+    ${unm.length?`<div class="card" style="margin-bottom:16px"><h3>Unmapped supplier names (${unm.length} rates)</h3><p class="mute">Rates returned without a <code>mappedRoomId</code>.</p>
       <table><thead><tr><th>Supplier room name</th><th class="num">Rates</th><th class="num">From</th></tr></thead><tbody>${Object.entries(uv).sort((a,b)=>b[1].n-a[1].n).map(([k,v])=>`<tr><td>${esc(k)}</td><td class="num">${v.n}</td><td class="num">${money(v.min,v.cur)}</td></tr>`).join('')}</tbody></table></div>`:''}
-    ${unused.length?`<div class="card" style="margin-bottom:16px"><h3>Master rooms with no live rate on these dates (${unused.length})</h3><p class="mute">In the hotel's content but no supplier rate resolved to them. Could be sold out, or a coverage gap.</p><div class="chips">${unused.map(r=>`<label class="cmpchk" style="border-color:var(--line);color:#333"><input type="checkbox" data-cmp="${esc(r.id)}" ${CMP.has(r.id)?'checked':''}> ${esc(r.name)} · ${esc(r.id)}${r.photos.length?` · 📷 ${r.photos.length}`:''}</label>`).join('')}</div></div>`:''}
-    ${orphanIds.length?`<div class="card" style="margin-bottom:16px"><h3 style="color:var(--terra)">Mapped to IDs missing from content (${orphanIds.length})</h3><div class="chips">${orphanIds.map(i=>`<span class="chip r">${esc(i)}</span>`).join('')}</div></div>`:''}
+    ${unused.length?`<div class="card" style="margin-bottom:16px"><h3>Master rooms with no live rate on these dates (${unused.length})</h3><p class="mute">In the hotel's content, with no supplier rate on these dates.</p><div class="chips">${unused.map(r=>`<label class="cmpchk" style="border-color:var(--line);color:#333"><input type="checkbox" data-cmp="${esc(r.id)}" ${CMP.has(r.id)?'checked':''}> ${esc(r.name)} · ${esc(r.id)}${r.photos.length?` · 📷 ${r.photos.length}`:''}</label>`).join('')}</div></div>`:''}
+    ${orphanIds.length?`<div class="card" style="margin-bottom:16px"><h3>Mapped to IDs not in content (${orphanIds.length})</h3><div class="chips">${orphanIds.map(i=>`<span class="chip r">${esc(i)}</span>`).join('')}</div></div>`:''}
     ${dupHtml(CR)}
-    <div class="legend">⚑ <b>Check flags</b> compare keywords in the supplier name with the master room name (bed type, room class, view). Example: supplier says "Twin" and the master room says "Double". This is a simple heuristic to surface candidates for review. It is not how Nuitee maps rooms, and a flag isn't proof of an error.</div>`;
+    <div class="legend">⚑ = the supplier name and the master room name mention a different bed type, room class or view.</div>`;
   bindHotel();
   $('csvHotel').onclick=()=>csv(`mapping-${hotel.id}.csv`,[['hotelId','supplier_room_name','mapped_room_id','master_room_name','board','refundable','price','currency','check_flag'],
     ...RT.map(r=>{const m=byId[r.mappedRoomId]; return [hotel.id,r.supplierName,r.mappedRoomId||'',m?.name||'',r.board,r.refundable,r.price,r.currency,r.mappedRoomId?flagsFor(r.supplierName,m?.name||'').join(' | '):'UNMAPPED'];})]);
@@ -343,8 +380,8 @@ function dupCandidates(CR){
 }
 function dupHtml(CR){
   const c=dupCandidates(CR); if(!c.length) return '';
-  return `<div class="card" style="margin-bottom:16px"><h3>Possible duplicate or look-alike master rooms (${c.length})</h3>
-    <p class="mute">Pairs with the same bed count/type and the same size. <b>Shared photos</b> = identical image files used by both rooms. My heuristic to pick pairs for a closer look, not proof that they are the same room. Open <b>Compare</b> and look at the photos.</p>
+  return `<div class="card" style="margin-bottom:16px"><h3>Similar rooms in this hotel (${c.length})</h3>
+    <p class="mute">Master rooms with the same bed type and size. <b>Shared photos</b> = the same image file used by both.</p>
     ${c.slice(0,12).map(p=>`<div class="dup"><div><b>${esc(p.x.name)}</b> <span class="mute">(${esc(p.x.id)})</span> ↔ <b>${esc(p.y.name)}</b> <span class="mute">(${esc(p.y.id)})</span>
       <div class="chips"><span class="chip o">🛏 ${esc(bedSig(p.x))}</span><span class="chip o">${esc(p.x.size)}</span>${p.widthDiff?'<span class="chip w">bed widths differ</span>':''}${p.shared?`<span class="chip w">${p.shared} shared photo file${p.shared>1?'s':''}</span>`:'<span class="chip o">no shared photo files</span>'}</div></div>
       <button class="btn ghost" style="padding:6px 12px" data-pair="${esc(p.x.id)}|${esc(p.y.id)}">Compare</button></div>`).join('')}</div>`;
@@ -374,7 +411,7 @@ function openCompare(){
   };
   const ov=document.createElement('div'); ov.className='ov'; ov.id='cmpOv';
   ov.innerHTML=`<div class="ovbox"><button class="ovx" aria-label="Close">×</button><div class="eyebrow">Compare master rooms</div><h2>${esc(lastHotel.hotel.name)}</h2>
-    <div class="legend" style="margin:8px 0">${pairs.join(' · ')}<br><span class="diff">Highlighted amenities</span> are not shared by all rooms compared. Photos outlined as <b>shared</b> are the identical file in more than one room. Same file ≠ same room: hotels often reuse photos across room types.</div>
+    <div class="legend" style="margin:8px 0">${pairs.join(' · ')}<br><span class="diff">Highlighted amenities</span> are not shared by all rooms compared. Photos outlined as <b>shared</b> are the identical file in more than one room.</div>
     <div class="cmpgrid" style="grid-template-columns:repeat(${Math.min(rooms.length,4)},minmax(240px,1fr))">${rooms.map(col).join('')}</div></div>`;
   document.body.appendChild(ov); document.body.style.overflow='hidden';
   const close=()=>{ ov.remove(); document.body.style.overflow=''; document.removeEventListener('keydown',esc_); };
