@@ -163,7 +163,7 @@ app.get('/api/hotel/:id', wrap(async (req, res) => {
     checkout: pickTime(d, ['checkout', 'checkout_end', 'checkoutEnd', 'checkOut']),
     stars: d.starRating || null, score: d.rating || null, reviews: d.reviewCount || null,
     lat: d.location?.latitude || d.latitude || null, lng: d.location?.longitude || d.longitude || null,
-    rooms: contentRooms(d).map(r => ({ id: r.id, name: r.name, photo: r.photos[0] || '' })),
+    rooms: contentRooms(d).map(r => ({ id: r.id, name: r.name, photo: r.photos[0] || '', photos: r.photos, beds: r.beds, size: r.size, maxOccupancy: r.maxOccupancy, description: r.description, amenities: r.amenities })),
   });
 }));
 
@@ -178,12 +178,12 @@ function contentRooms(d) {
   return (d.rooms || []).map(r => ({
     id: String(r.id),
     name: r.roomName || r.name || `Room ${r.id}`,
-    description: strip(r.description).slice(0, 400),
+    description: strip(r.description).slice(0, 1500),
     maxOccupancy: r.maxOccupancy || r.maxAdults || null,
     beds: (r.bedTypes || []).map(b => `${b.quantity || 1} × ${b.bedType || b.name || 'bed'}${b.bedSize ? ` (${b.bedSize})` : ''}`),
     size: r.roomSizeSquare ? `${r.roomSizeSquare} ${r.roomSizeUnit || 'm²'}` : '',
-    amenities: (r.roomAmenities || []).map(a => a.name || a).filter(Boolean).slice(0, 12),
-    photos: (r.photos || []).map(p => p.url || p.hd_url || p.failoverPhoto).filter(Boolean).slice(0, 6),
+    amenities: (r.roomAmenities || []).map(a => a.name || a).filter(Boolean).slice(0, 60),
+    photos: (r.photos || []).map(p => p.url || p.hd_url || p.failoverPhoto).filter(Boolean).slice(0, 20),
   }));
 }
 // One hotel: every supplier rate + the master room list it should resolve to

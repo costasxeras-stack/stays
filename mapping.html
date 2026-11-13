@@ -43,6 +43,25 @@ tbody tr:hover{background:var(--foam)}td.num,th.num{text-align:right}
 .chip{font-size:11.5px;padding:3px 9px;border-radius:20px;background:var(--foam);color:var(--aegean);font-weight:600}
 .chip.o{background:#f3f1ec;color:#444}.chip.w{background:#fdf1e0;color:var(--amber)}.chip.r{background:#f8ebe5;color:var(--terra)}.chip.g{background:#eef3e6;color:var(--olive)}
 .flag{color:var(--amber);font-weight:700}
+.room .ph{cursor:zoom-in}.room .ph .cnt{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;padding:2px 7px;border-radius:8px}
+.cmpchk{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--aegean);background:#fff;border:1.5px solid var(--aegean);border-radius:20px;padding:2px 10px;cursor:pointer}
+.cmpchk input{accent-color:var(--aegean)}
+.cmpbar{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:50;background:var(--deep);color:#fff;border-radius:14px;padding:10px 12px 10px 18px;display:flex;gap:12px;align-items:center;box-shadow:0 12px 30px rgba(0,0,0,.3);font-weight:600}
+.cmpbar .btn{padding:8px 14px}.cmpbar .btn.ghost{background:transparent;color:#fff;border-color:#fff}
+.ov{position:fixed;inset:0;z-index:60;background:rgba(6,22,44,.6);overflow:auto;padding:24px 12px}
+.ovbox{background:var(--marble);border-radius:18px;max-width:1300px;margin:auto;padding:22px;position:relative}
+.ovx{position:absolute;top:12px;right:12px;width:38px;height:38px;border-radius:50%;border:0;background:#fff;font-size:22px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.cmpgrid{display:grid;gap:14px;margin-top:14px}
+.cmpcol{background:#fff;border-radius:14px;padding:14px;min-width:0;box-shadow:0 6px 18px rgba(11,34,64,.06)}
+.cmpcol h4{font:600 19px 'Cormorant Garamond',serif;margin:2px 0 8px}
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:10px}
+.pgrid div{aspect-ratio:4/3;background:#e8eef6 center/cover;border-radius:6px;cursor:zoom-in;position:relative}
+.pgrid div.sh{outline:3px solid var(--amber);outline-offset:-3px}
+.pgrid div.sh:after{content:'shared';position:absolute;left:3px;bottom:3px;background:var(--amber);color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:4px}
+.kv{display:grid;grid-template-columns:92px 1fr;gap:4px 8px;font-size:12.5px;margin:6px 0}.kv b{color:var(--mute);font-weight:600}
+.diff{background:#fdf1e0;border-radius:4px;padding:0 3px}
+.desc{font-size:12.5px;color:#333;max-height:140px;overflow:auto;border-top:1px solid var(--line);padding-top:6px;margin-top:6px}
+.dup{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
 .legend{font-size:12.5px;color:var(--mute);background:#fff;border:1px dashed var(--line);border-radius:12px;padding:12px 14px;margin:12px 0}
 .empty{text-align:center;padding:50px 20px;color:var(--mute)}
 .skel{height:120px;border-radius:14px;background:linear-gradient(90deg,#ebe8e1 0,#f6f4ef 50%,#ebe8e1 100%);background-size:200% 100%;animation:sh 1.2s infinite;margin-bottom:12px}@keyframes sh{to{background-position:-200% 0}}
@@ -52,6 +71,74 @@ tbody tr:hover{background:var(--foam)}td.num,th.num{text-align:right}
 </style>
 </head>
 <body>
+<!-- ===== Photo viewer (click any photo) ===== -->
+<style>
+.lb{position:fixed;inset:0;z-index:200;background:rgba(5,12,24,.94);display:flex;flex-direction:column;color:#fff;font-family:system-ui,sans-serif}
+.lb-top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px}
+.lb-top b{font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb-top span{opacity:.75;font-size:13px;white-space:nowrap}
+.lb-x,.lb-nav{border:0;background:rgba(255,255,255,.12);color:#fff;border-radius:50%;cursor:pointer;display:grid;place-items:center}
+.lb-x{width:40px;height:40px;font-size:24px;flex:none}.lb-x:hover,.lb-nav:hover{background:rgba(255,255,255,.25)}
+.lb-stage{flex:1;position:relative;display:flex;align-items:center;justify-content:center;min-height:0;padding:0 64px}
+.lb-stage img{max-width:100%;max-height:100%;object-fit:contain;border-radius:6px;user-select:none}
+.lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:48px;height:48px;font-size:26px}
+.lb-prev{left:10px}.lb-next{right:10px}
+.lb-thumbs{display:flex;gap:6px;overflow-x:auto;padding:10px 16px 16px;justify-content:safe center}
+.lb-thumbs img{height:58px;width:84px;object-fit:cover;border-radius:6px;opacity:.5;cursor:pointer;border:2px solid transparent;flex:none}
+.lb-thumbs img.on{opacity:1;border-color:#e6cf9f}
+.lb-err{opacity:.7;font-size:14px}
+@media(max-width:640px){.lb-stage{padding:0 8px}.lb-nav{width:40px;height:40px;background:rgba(0,0,0,.45)}.lb-thumbs img{height:46px;width:66px}}
+</style>
+<script>
+(function(){
+  let box=null, list=[], i=0, title='', pushed=false, x0=null;
+  const e=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function draw(){
+    if(!box) return;
+    box.querySelector('.lb-top span').textContent = `${i+1} / ${list.length}`;
+    const img = box.querySelector('.lb-stage img');
+    img.style.display=''; box.querySelector('.lb-err').style.display='none';
+    img.src = list[i];
+    box.querySelectorAll('.lb-thumbs img').forEach((t,k)=>t.classList.toggle('on',k===i));
+    box.querySelector('.lb-thumbs img.on')?.scrollIntoView({block:'nearest',inline:'center'});
+    box.querySelectorAll('.lb-nav').forEach(b=>b.style.display=list.length>1?'':'none');
+  }
+  function go(d){ i=(i+d+list.length)%list.length; draw(); }
+  function close(fromHistory){
+    if(!box) return; box.remove(); box=null; document.removeEventListener('keydown',key);
+    if(!document.querySelector('#modal:not(.hidden)')) document.body.style.overflow='';
+    if(pushed && !fromHistory){ pushed=false; history.back(); } pushed=false;
+  }
+  function key(ev){ if(ev.key==='Escape') close(); if(ev.key==='ArrowRight') go(1); if(ev.key==='ArrowLeft') go(-1); }
+  window.openGallery = function(photos, start=0, name=''){
+    list=(photos||[]).filter(Boolean); if(!list.length) return;
+    i=Math.min(Math.max(0,start),list.length-1); title=name;
+    if(box) box.remove();
+    box=document.createElement('div'); box.className='lb'; box.setAttribute('role','dialog'); box.setAttribute('aria-label','Photo viewer');
+    box.innerHTML=`<div class="lb-top"><b>${e(title)}</b><div style="display:flex;gap:14px;align-items:center"><span></span><button class="lb-x" aria-label="Close">×</button></div></div>
+      <div class="lb-stage"><button class="lb-nav lb-prev" aria-label="Previous photo">‹</button><img alt="${e(title)}"><div class="lb-err" style="display:none">This photo could not be loaded.</div><button class="lb-nav lb-next" aria-label="Next photo">›</button></div>
+      <div class="lb-thumbs">${list.map((p,k)=>`<img src="${e(p)}" data-k="${k}" alt="Photo ${k+1}" loading="lazy">`).join('')}</div>`;
+    document.body.appendChild(box); document.body.style.overflow='hidden';
+    box.querySelector('.lb-x').onclick=()=>close();
+    box.querySelector('.lb-prev').onclick=ev=>{ev.stopPropagation();go(-1);};
+    box.querySelector('.lb-next').onclick=ev=>{ev.stopPropagation();go(1);};
+    box.querySelector('.lb-stage').onclick=ev=>{ if(ev.target.classList.contains('lb-stage')) close(); };
+    box.querySelector('.lb-thumbs').onclick=ev=>{ const t=ev.target.closest('[data-k]'); if(t){ i=+t.dataset.k; draw(); } };
+    box.querySelector('.lb-stage img').onerror=function(){ if(!box) return; this.style.display='none'; box.querySelector('.lb-err').style.display=''; };
+    const st=box.querySelector('.lb-stage');
+    st.addEventListener('touchstart',ev=>{x0=ev.touches[0].clientX;},{passive:true});
+    st.addEventListener('touchend',ev=>{ if(x0==null) return; const dx=ev.changedTouches[0].clientX-x0; if(Math.abs(dx)>40) go(dx<0?1:-1); x0=null; });
+    document.addEventListener('keydown',key);
+    if(!pushed){ history.pushState({...(history.state||{}), gallery:true}, '', location.href); pushed=true; }
+    draw();
+  };
+  // the browser back button closes the viewer
+  addEventListener('popstate',ev=>{ if(box){ pushed=false; close(true); ev.stopImmediatePropagation(); } }, true);
+  window.galleryOpen=()=>!!box;
+})();
+</script>
+<!-- ===== /Photo viewer ===== -->
+
 <header><div class="w"><h1>ROOM MAPPING INSPECTOR</h1><span class="mute" style="color:#9fb2cc">Nuitee LiteAPI · roomMapping</span><a href="/">← KostasTravel</a> <a href="/lab" style="margin-left:0">API Lab</a></div></header>
 <div class="meander"></div>
 <div class="w">
@@ -114,7 +201,7 @@ addEventListener('popstate', e => {
 });
 function tab(t, push=true, id){
   if (push && (history.state?.t!==t || (id && history.state?.id!==id))) history.pushState({t, id}, '', location.pathname + (t==='hotel' && id ? '#hotel-'+encodeURIComponent(id) : '#'+t));
-  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));$('tScan').classList.toggle('hidden',t!=='scan');$('tHotel').classList.toggle('hidden',t!=='hotel');}
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));$('tScan').classList.toggle('hidden',t!=='scan');$('tHotel').classList.toggle('hidden',t!=='hotel'); if(window.cmpBar&&$('cmpBar')) cmpBar();}
 
 /* autocomplete */
 let tm; $('dest').oninput=e=>{placeId=null;clearTimeout(tm);const q=e.target.value.trim();if(q.length<2)return $('sug').classList.add('hidden');
@@ -122,7 +209,7 @@ let tm; $('dest').oninput=e=>{placeId=null;clearTimeout(tm);const q=e.target.val
   $('sug').innerHTML=l.slice(0,7).map(p=>`<li data-id="${esc(p.placeId)}" data-n="${esc(p.displayName)}"><b>${esc(p.displayName)}</b> <span class="mute">${esc(p.formattedAddress||'')}</span></li>`).join('');$('sug').classList.toggle('hidden',!l.length);},220);};
 $('sug').onmousedown=e=>{const li=e.target.closest('li');if(!li)return;e.preventDefault();placeId=li.dataset.id;$('dest').value=li.dataset.n;$('sug').classList.add('hidden');};
 $('dest').onblur=()=>setTimeout(()=>$('sug').classList.add('hidden'),150);
-const q=()=>({checkin:$('ci').value,checkout:$('co').value,adults:$('ad').value});
+const q=()=>({checkin:$('ci').value,checkout:$('co').value,adults:$('ad').value,nationality:'PL',currency:'EUR'}); // same guest profile as the cheat-sheet numbers
 
 /* ===== destination scan ===== */
 $('scanBtn').onclick=async()=>{
@@ -175,6 +262,7 @@ function flagsFor(supplier, master){
   return f;
 }
 async function inspect(id, push=true){
+  CMP.clear();
   tab('hotel', push, id); $('hid').value=id; $('hotelOut').innerHTML='<div class="skel"></div><div class="skel"></div><div class="skel"></div>';
   try{ lastHotel=await api('/api/mapping/hotel',{hotelId:id,...q()}); drawHotel(); }
   catch(e){ $('hotelOut').innerHTML=`<div class="card empty">${esc(e.message)}</div>`; }
@@ -194,9 +282,9 @@ function drawHotel(){
     const vs=Object.values(variants).sort((a,b)=>b.n-a.n);
     const rows=vs.map(v=>{const f=flagsFor(v.name,masterName); if(f.length) flagged+=v.n; return `<tr><td>${esc(v.name)}${f.length?`<div class="flag">⚑ ${esc(f.join(' · '))}</div>`:''}</td><td class="num">${v.n}</td><td>${[...v.boards].map(b=>`<span class="chip o">${esc(b)}</span>`).join(' ')}</td><td class="num">${v.min===v.max?money(v.min,v.cur):money(v.min,v.cur)+'–'+money(v.max,v.cur)}</td></tr>`;}).join('');
     const ph=m?.photos||[];
-    return `<div class="room"><div class="ph" style="background-image:url('${esc(ph[0]||'')}')">${ph.length>1?`<div class="thumbs">${ph.slice(1,5).map(p=>`<i style="background-image:url('${esc(p)}')"></i>`).join('')}</div>`:''}</div>
+    return `<div class="room"><div class="ph" data-gal="${esc(id)}" data-i="0" style="background-image:url('${esc(ph[0]||'')}')">${ph.length?`<span class="cnt">📷 ${ph.length}</span>`:''}${ph.length>1?`<div class="thumbs">${ph.slice(1,5).map((p,k)=>`<i data-gal="${esc(id)}" data-i="${k+1}" style="background-image:url('${esc(p)}')"></i>`).join('')}</div>`:''}</div>
       <div class="b"><div class="row" style="justify-content:space-between"><div><div class="eyebrow">Master room · ${esc(id)}</div><h3 style="font-size:20px;font-family:'Cormorant Garamond',serif">${esc(masterName)}</h3></div>
-        <div class="chips"><span class="chip">${rs.length} rates</span><span class="chip">${vs.length} name variant${vs.length>1?'s':''}</span>${m?'':'<span class="chip r">Not in hotel content</span>'}</div></div>
+        <div class="chips"><span class="chip">${rs.length} rates</span><span class="chip">${vs.length} name variant${vs.length>1?'s':''}</span>${m?`<label class="cmpchk"><input type="checkbox" data-cmp="${esc(id)}" ${CMP.has(id)?'checked':''}> Compare</label>`:'<span class="chip r">Not in hotel content</span>'}</div></div>
         ${m?`<div class="chips">${m.beds.map(b=>`<span class="chip o">🛏 ${esc(b)}</span>`).join('')}${m.maxOccupancy?`<span class="chip o">👤 max ${esc(m.maxOccupancy)}</span>`:''}${m.size?`<span class="chip o">${esc(m.size)}</span>`:''}</div>`:''}
         <div class="tw"><table><thead><tr><th>Supplier room name</th><th class="num">Rates</th><th>Boards</th><th class="num">Price</th></tr></thead><tbody>${rows}</tbody></table></div></div></div>`;
   }).join('');
@@ -217,12 +305,84 @@ function drawHotel(){
     ${roomCards}
     ${unm.length?`<div class="card" style="margin-bottom:16px"><h3 style="color:var(--terra)">Unmapped supplier names (${unm.length} rates)</h3><p class="mute">These rates came back without a <code>mappedRoomId</code>, so a guest sees the raw supplier name and no room photos.</p>
       <table><thead><tr><th>Supplier room name</th><th class="num">Rates</th><th class="num">From</th></tr></thead><tbody>${Object.entries(uv).sort((a,b)=>b[1].n-a[1].n).map(([k,v])=>`<tr><td>${esc(k)}</td><td class="num">${v.n}</td><td class="num">${money(v.min,v.cur)}</td></tr>`).join('')}</tbody></table></div>`:''}
-    ${unused.length?`<div class="card" style="margin-bottom:16px"><h3>Master rooms with no live rate on these dates (${unused.length})</h3><p class="mute">In the hotel's content but no supplier rate resolved to them. Could be sold out, or a coverage gap.</p><div class="chips">${unused.map(r=>`<span class="chip o">${esc(r.name)} · ${esc(r.id)}</span>`).join('')}</div></div>`:''}
+    ${unused.length?`<div class="card" style="margin-bottom:16px"><h3>Master rooms with no live rate on these dates (${unused.length})</h3><p class="mute">In the hotel's content but no supplier rate resolved to them. Could be sold out, or a coverage gap.</p><div class="chips">${unused.map(r=>`<label class="cmpchk" style="border-color:var(--line);color:#333"><input type="checkbox" data-cmp="${esc(r.id)}" ${CMP.has(r.id)?'checked':''}> ${esc(r.name)} · ${esc(r.id)}${r.photos.length?` · 📷 ${r.photos.length}`:''}</label>`).join('')}</div></div>`:''}
     ${orphanIds.length?`<div class="card" style="margin-bottom:16px"><h3 style="color:var(--terra)">Mapped to IDs missing from content (${orphanIds.length})</h3><div class="chips">${orphanIds.map(i=>`<span class="chip r">${esc(i)}</span>`).join('')}</div></div>`:''}
+    ${dupHtml(CR)}
     <div class="legend">⚑ <b>Check flags</b> compare keywords in the supplier name with the master room name (bed type, room class, view). Example: supplier says "Twin" and the master room says "Double". This is a simple heuristic to surface candidates for review. It is not how Nuitee maps rooms, and a flag isn't proof of an error.</div>`;
+  bindHotel();
   $('csvHotel').onclick=()=>csv(`mapping-${hotel.id}.csv`,[['hotelId','supplier_room_name','mapped_room_id','master_room_name','board','refundable','price','currency','check_flag'],
     ...RT.map(r=>{const m=byId[r.mappedRoomId]; return [hotel.id,r.supplierName,r.mappedRoomId||'',m?.name||'',r.board,r.refundable,r.price,r.currency,r.mappedRoomId?flagsFor(r.supplierName,m?.name||'').join(' | '):'UNMAPPED'];})]);
 }
+
+/* ===== photos, compare, possible duplicates ===== */
+const CMP=new Set();
+const fileOf=u=>String(u||'').split('?')[0].split('/').pop().toLowerCase();
+const bedSig=r=>(r.beds||[]).map(b=>b.replace(/\s*\(.*?\)\s*/g,'').toLowerCase().trim()).sort().join(' + ');
+const sizeNum=r=>{const m=String(r.size||'').match(/[\d.]+/);return m?Math.round(+m[0]):null;};
+const STOP=new Set(['room','guest','bed','beds','with','and','or','the','1','2','view','non','smoking','single','s']);
+const toks=s=>new Set(norm(s).split(' ').filter(t=>t&&!STOP.has(t)));
+const jac=(a,b)=>{const A=toks(a),B=toks(b);const i=[...A].filter(x=>B.has(x)).length;return A.size+B.size?i/(A.size+B.size-i):0;};
+function roomById(id){ return (lastHotel?.contentRooms||[]).find(r=>r.id===id); }
+function bindHotel(){
+  $('hotelOut').querySelectorAll('[data-gal]').forEach(el=>el.onclick=ev=>{ev.stopPropagation(); const r=roomById(el.dataset.gal); if(r) openGallery(r.photos, +el.dataset.i||0, r.name+' · '+r.id);});
+  $('hotelOut').querySelectorAll('[data-cmp]').forEach(cb=>cb.onchange=()=>{cb.checked?CMP.add(cb.dataset.cmp):CMP.delete(cb.dataset.cmp); $('hotelOut').querySelectorAll(`[data-cmp="${cb.dataset.cmp}"]`).forEach(x=>x.checked=cb.checked); cmpBar();});
+  $('hotelOut').querySelectorAll('[data-pair]').forEach(b=>b.onclick=()=>{CMP.clear(); b.dataset.pair.split('|').forEach(i=>CMP.add(i)); $('hotelOut').querySelectorAll('[data-cmp]').forEach(x=>x.checked=CMP.has(x.dataset.cmp)); cmpBar(); openCompare();});
+  cmpBar();
+}
+// Candidate pairs: same bed count/type (ignoring width) and same size; scored by shared photo files and name overlap. A heuristic, not a verdict.
+function dupCandidates(CR){
+  const out=[];
+  for(let a=0;a<CR.length;a++) for(let b=a+1;b<CR.length;b++){
+    const x=CR[a], y=CR[b]; if(!x.beds.length||bedSig(x)!==bedSig(y)) continue;
+    const sx=sizeNum(x), sy=sizeNum(y); if(sx==null||sx!==sy) continue;
+    const fx=new Set(x.photos.map(fileOf)); const shared=y.photos.map(fileOf).filter(f=>fx.has(f)).length;
+    const sim=jac(x.name,y.name);
+    out.push({x,y,shared,sim,widthDiff:x.beds.join()!==y.beds.join()});
+  }
+  return out.sort((p,q)=>(q.shared-p.shared)||(q.sim-p.sim));
+}
+function dupHtml(CR){
+  const c=dupCandidates(CR); if(!c.length) return '';
+  return `<div class="card" style="margin-bottom:16px"><h3>Possible duplicate or look-alike master rooms (${c.length})</h3>
+    <p class="mute">Pairs with the same bed count/type and the same size. <b>Shared photos</b> = identical image files used by both rooms. My heuristic to pick pairs for a closer look, not proof that they are the same room. Open <b>Compare</b> and look at the photos.</p>
+    ${c.slice(0,12).map(p=>`<div class="dup"><div><b>${esc(p.x.name)}</b> <span class="mute">(${esc(p.x.id)})</span> ↔ <b>${esc(p.y.name)}</b> <span class="mute">(${esc(p.y.id)})</span>
+      <div class="chips"><span class="chip o">🛏 ${esc(bedSig(p.x))}</span><span class="chip o">${esc(p.x.size)}</span>${p.widthDiff?'<span class="chip w">bed widths differ</span>':''}${p.shared?`<span class="chip w">${p.shared} shared photo file${p.shared>1?'s':''}</span>`:'<span class="chip o">no shared photo files</span>'}</div></div>
+      <button class="btn ghost" style="padding:6px 12px" data-pair="${esc(p.x.id)}|${esc(p.y.id)}">Compare</button></div>`).join('')}</div>`;
+}
+function cmpBar(){
+  let bar=$('cmpBar'); if(!bar){ bar=document.createElement('div'); bar.id='cmpBar'; bar.className='cmpbar hidden'; document.body.appendChild(bar); }
+  bar.innerHTML=`<span>${CMP.size} room${CMP.size===1?'':'s'} selected</span><button class="btn" id="cmpGo" ${CMP.size<2?'disabled':''}>Compare</button><button class="btn ghost" id="cmpClr">Clear</button>`;
+  bar.classList.toggle('hidden', !CMP.size || $('tHotel').classList.contains('hidden'));
+  $('cmpGo').onclick=openCompare; $('cmpClr').onclick=()=>{CMP.clear(); $('hotelOut').querySelectorAll('[data-cmp]').forEach(x=>x.checked=false); cmpBar();};
+}
+function openCompare(){
+  const rooms=[...CMP].map(roomById).filter(Boolean); if(rooms.length<2) return;
+  const {rates}=lastHotel;
+  const fileCount={}; rooms.forEach(r=>new Set(r.photos.map(fileOf)).forEach(f=>fileCount[f]=(fileCount[f]||0)+1));
+  const amenAll=rooms.map(r=>new Set(r.amenities.map(a=>a.toLowerCase())));
+  const pairs=[]; for(let a=0;a<rooms.length;a++) for(let b=a+1;b<rooms.length;b++){ const fa=new Set(rooms[a].photos.map(fileOf)); const n=rooms[b].photos.map(fileOf).filter(f=>fa.has(f)).length; pairs.push(`<b>${esc(rooms[a].id)}</b> ↔ <b>${esc(rooms[b].id)}</b>: ${n} shared photo file${n===1?'':'s'}`); }
+  const col=r=>{
+    const rs=rates.filter(x=>x.mappedRoomId===r.id); const pr=rs.map(x=>x.price).filter(Boolean); const cur=rs[0]?.currency||'EUR';
+    const names=[...new Set(rs.map(x=>x.supplierName.trim()))];
+    return `<div class="cmpcol"><div class="eyebrow">Master room · ${esc(r.id)}</div><h4>${esc(r.name)}</h4>
+      <div class="pgrid">${r.photos.map((p,k)=>`<div data-cg="${esc(r.id)}" data-i="${k}" class="${fileCount[fileOf(p)]>1?'sh':''}" style="background-image:url('${esc(p)}')"></div>`).join('')||'<span class="mute">No photos</span>'}</div>
+      <div class="kv"><b>Beds</b><span>${esc(r.beds.join(', ')||'—')}</span><b>Size</b><span>${esc(r.size||'—')}</span><b>Max guests</b><span>${esc(r.maxOccupancy||'—')}</span>
+        <b>Photos</b><span>${r.photos.length}</span><b>Live rates</b><span>${rs.length?`${rs.length} · ${money(Math.min(...pr),cur)}–${money(Math.max(...pr),cur)}`:'none on these dates'}</span>
+        <b>Supplier names</b><span>${names.map(esc).join('<br>')||'—'}</span>
+        <b>Amenities</b><span>${r.amenities.map(a=>amenAll.every(s=>s.has(a.toLowerCase()))?esc(a):`<span class="diff">${esc(a)}</span>`).join(', ')||'—'}</span></div>
+      <div class="desc">${esc(r.description)||'<span class="mute">No description</span>'}</div></div>`;
+  };
+  const ov=document.createElement('div'); ov.className='ov'; ov.id='cmpOv';
+  ov.innerHTML=`<div class="ovbox"><button class="ovx" aria-label="Close">×</button><div class="eyebrow">Compare master rooms</div><h2>${esc(lastHotel.hotel.name)}</h2>
+    <div class="legend" style="margin:8px 0">${pairs.join(' · ')}<br><span class="diff">Highlighted amenities</span> are not shared by all rooms compared. Photos outlined as <b>shared</b> are the identical file in more than one room. Same file ≠ same room: hotels often reuse photos across room types.</div>
+    <div class="cmpgrid" style="grid-template-columns:repeat(${Math.min(rooms.length,4)},minmax(240px,1fr))">${rooms.map(col).join('')}</div></div>`;
+  document.body.appendChild(ov); document.body.style.overflow='hidden';
+  const close=()=>{ ov.remove(); document.body.style.overflow=''; document.removeEventListener('keydown',esc_); };
+  const esc_=e=>{ if(e.key==='Escape' && !window.galleryOpen?.()) close(); };
+  ov.querySelector('.ovx').onclick=close; ov.onclick=e=>{ if(e.target===ov) close(); }; document.addEventListener('keydown',esc_);
+  ov.querySelectorAll('[data-cg]').forEach(el=>el.onclick=()=>{const r=roomById(el.dataset.cg); openGallery(r.photos,+el.dataset.i,r.name+' · '+r.id);});
+}
+
 function csv(name,rows){
   const s=rows.map(r=>r.map(v=>{v=String(v??'');return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}).join(',')).join('\n');
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['﻿'+s],{type:'text/csv'})); a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
