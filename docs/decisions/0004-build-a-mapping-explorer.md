@@ -10,5 +10,5 @@ Build `/mapping`, an explorer that joins the two: supplier names grouped under e
 
 ## Consequences
 - Problems that a guest can't see (such as the same room stored twice) become visible in one screen.
-- Its checks are simple rules (same bed type and size, shared photo files, keyword differences). They pick candidates for a human to review; they don't prove errors. The case study lists the false positives.
+- Its checks are simple rules (same bed type and size, shared photo files, keyword differences). They pick candidates for a human to review. They don't prove errors. The case study lists the false positives.
 - The first scan found a stronger problem than expected only after checking photos by hand, which led to the photo-file comparison in v1.3.0.
