@@ -8,9 +8,9 @@ Hotel supply reaches booking sites from many suppliers, each describing the same
 
 | User | Need |
 |---|---|
-| **Traveller** | Find a hotel, understand exactly which room they are paying for, book and manage it. |
-| **Mapping and content analyst** | See how supplier names resolve to master rooms, spot rooms without prices and rooms that look alike, and compare them quickly. |
-| **Developer evaluating the API** | Call any endpoint, see the raw response and the timing. |
+| Traveller | Find a hotel, understand exactly which room they are paying for, book and manage it. |
+| Mapping and content analyst | See how supplier names resolve to master rooms, spot rooms without prices and rooms that look alike, and compare them quickly. |
+| Developer evaluating the API | Call any endpoint, see the raw response and the timing. |
 
 ## Goals
 

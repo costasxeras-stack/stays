@@ -10,4 +10,4 @@ Deploy on Render's free plan from GitHub. The server starts without a key and sh
 
 ## Consequences
 - Free, public HTTPS URL, redeployed automatically on every commit.
-- The free plan sleeps when idle; the first request can take up to about a minute. Open the site a few minutes before any demo.
+- The free plan sleeps when idle. The first request can take up to about a minute. Open the site a few minutes before any demo.

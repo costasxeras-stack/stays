@@ -1,6 +1,6 @@
 # Decision records
 
-Short notes on the decisions that shaped KostasTravel: the context, what I chose, and what it cost. New decisions get the next number and are never rewritten; a reversed decision gets a new record that supersedes the old one.
+Short notes on the decisions that shaped KostasTravel: the context, what I chose, and what it cost. New decisions get the next number and are never rewritten. A reversed decision gets a new record that supersedes the old one.
 
 | # | Decision | Status |
 |---|---|---|
