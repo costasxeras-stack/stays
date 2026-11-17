@@ -112,6 +112,8 @@ app.post('/api/rates', wrap(async (req, res) => {
     includeHotelData: true, roomMapping: true, maxRatesPerHotel: 10, limit: 200, timeout: 30,
   };
   if (hotelIds?.length) q.hotelIds = hotelIds.slice(0, 50); else q.placeId = placeId;
+  // One hotel opened on its own: ask for all its rates, so pricier room types aren't cut off
+  if (hotelIds?.length === 1) q.maxRatesPerHotel = 200;
   const data = await post('api', '/hotels/rates', q);
   const info = {};
   (data.hotels || []).forEach(h => { info[h.id] = h; });

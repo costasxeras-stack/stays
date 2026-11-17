@@ -6,6 +6,11 @@ Versions 0.1.0 to 1.3.0 were reconstructed from the build history. Their code wa
 
 ## [Unreleased]
 
+## [1.4.2] - 2026-11-17
+
+### Fixed
+- Opening a hotel showed only its 10 cheapest rates, so pricier room types disappeared on some dates (for example, a "Classic Plus Queen" room was missing for 14–16 December). A hotel opened on its own now loads up to 200 rates.
+
 ## [1.4.1] - 2026-11-16
 
 ### Changed
@@ -95,5 +100,5 @@ Full rebuild to cover most of what the LiteAPI offers.
 - First working version: destination search, hotel rates, prebook, payment through the Nuitee Payment SDK, and booking.
 - Express server that keeps the API key off the browser.
 
-[Unreleased]: https://github.com/[your-username]/kostastravel/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/[your-username]/kostastravel/compare/v1.4.2...HEAD
 [1.4.0]: https://github.com/[your-username]/kostastravel/releases/tag/v1.4.0
