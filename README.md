@@ -2,7 +2,7 @@
 
 **A hotel booking site and a room-mapping explorer, built on the Nuitee LiteAPI.**
 
-Live demo: **https://kostastravel.onrender.com** · Mapping explorer: **/mapping** · Current version: **v1.4.1** ([changelog](CHANGELOG.md))
+Live demo: **https://kostastravel.onrender.com** · Mapping explorer: **/mapping** · Current version: **v1.4.2** ([changelog](CHANGELOG.md))
 
 > Built by Konstantinos Xeras, product manager (data, search and AI products). This repo is part of my product portfolio: each app documents the problem, the decisions and what I learned, along with the code.
 
